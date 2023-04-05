@@ -1,0 +1,14 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const products_1 = __importDefault(require("./products"));
+const category_1 = __importDefault(require("./category"));
+const order_1 = __importDefault(require("./order"));
+function route(app) {
+    app.use('/product', products_1.default);
+    app.use('/category', category_1.default);
+    app.use('/order', order_1.default);
+}
+module.exports = route;
