@@ -23,7 +23,7 @@ exports.Order = connect_1.db.define('orders', {
         allowNull: false,
     },
     order_date: {
-        type: sequelize_1.DataTypes.DATE,
+        type: sequelize_1.DataTypes.DATEONLY,
         allowNull: false,
     },
     order_status: {

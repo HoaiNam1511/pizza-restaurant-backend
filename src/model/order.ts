@@ -18,7 +18,7 @@ export const Order = db.define('orders', {
         allowNull: false,
     },
     order_date: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
     },
     order_status: {

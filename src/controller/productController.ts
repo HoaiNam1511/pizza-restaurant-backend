@@ -84,7 +84,6 @@ export const create = async (req: Request, res: Response) => {
         let { name, price, material, description, image, categories }: Product =
             req.body;
         const categoriesArr = JSON.parse(req.body.categories);
-
         try {
             await Product.create({
                 name: name,

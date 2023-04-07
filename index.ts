@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const morgan = require('morgan');
 const port: number = 8080;
+var bodyParser = require('body-parser');
 
 import { Request, Response } from 'express';
 
@@ -19,6 +20,12 @@ app.get('/', (req: Request, res: Response) => {
 // app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(
+    bodyParser.urlencoded({
+        extended: true,
+    })
+);
+
 app.use('/images', express.static('images'));
 route(app);
 
