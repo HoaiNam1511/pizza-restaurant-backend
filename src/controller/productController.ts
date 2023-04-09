@@ -4,6 +4,7 @@ import Product from '../model/product';
 import { CategoryProduct } from '../model/relationModel';
 import multer from 'multer';
 import Category from '../model/category';
+import { QueryParams } from './index';
 
 export interface Product extends Request {
     id?: number;
@@ -13,13 +14,6 @@ export interface Product extends Request {
     description?: string;
     image?: File | null;
     categories: number[];
-}
-
-interface QueryParams {
-    page: number;
-    sortBy: string;
-    orderBy: string;
-    limit?: number;
 }
 
 type AsyncFunction<T> = () => Promise<T>;

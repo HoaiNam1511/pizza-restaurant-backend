@@ -77,6 +77,10 @@ export const OrderDetail = db.define('order_details', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 });
 
 Customer.hasMany(Order, {

@@ -1,14 +1,19 @@
 import { Order, Customer, OrderDetail } from '../model/order';
 import { Request, Response } from 'express';
 import Product from '../model/product';
-const moment = require('moment');
+import moment from 'moment';
+import { QueryParams } from './index';
+import { getNewId } from '../controller/';
 interface OrderProperty {
     customerName: string;
     address: string;
     email: string;
     phoneNumber: number;
     paymentMethod: string;
-    productId: number[];
+    products: {
+        productId: number;
+        quantity: number;
+    }[];
 }
 
 interface OrderUpdate {
@@ -26,9 +31,20 @@ interface CreateCode {
     newIdCustomer: number;
 }
 
-export const get = async (req: Request, res: Response): Promise<void> => {
+export const get = async (
+    req: Request<{}, {}, {}, QueryParams>,
+    res: Response
+): Promise<void> => {
     try {
-        const response = await Order.findAll({
+        const {
+            page = 0,
+            sortBy = 'id',
+            orderBy = 'DESC',
+            limit = 7,
+        }: QueryParams = req.query;
+        const offSet = (page - 1) * limit;
+
+        const response = await Order.findAndCountAll({
             include: [
                 {
                     model: Customer,
@@ -38,8 +54,18 @@ export const get = async (req: Request, res: Response): Promise<void> => {
                     as: 'products',
                 },
             ],
+            offset: page ? offSet : 0,
+            limit: limit ? +limit : null,
+            order: [[sortBy, orderBy]],
         });
-        res.send(response);
+
+        const rowCount = await Order.count();
+        const totalPage = Math.ceil(rowCount / limit);
+
+        res.send({
+            totalPage: totalPage,
+            data: response.rows,
+        });
     } catch (err) {
         console.log(err);
     }
@@ -58,14 +84,6 @@ const createCode = ({ paymentMethod, newIdCustomer }: CreateCode): string => {
     return code;
 };
 
-const getNewId = async ({ TableName }: { TableName: any }): Promise<number> => {
-    const newId: { id: number } = await TableName.findOne({
-        attributes: ['id'],
-        order: [['id', 'DESC']],
-    });
-    return newId.id;
-};
-
 export const create = async (
     req: Request<{}, {}, OrderProperty, {}>,
     res: Response
@@ -77,7 +95,7 @@ export const create = async (
             email,
             phoneNumber,
             paymentMethod,
-            productId,
+            products,
         }: OrderProperty = req.body;
         //Create string date for code
         let dateNow = new Date();
@@ -86,7 +104,7 @@ export const create = async (
         await Customer.create({
             name: customerName,
             address: address,
-            email: email,
+            email: email.toLowerCase(),
             phone_number: phoneNumber,
         });
 
@@ -106,9 +124,10 @@ export const create = async (
 
         const newIdOrder: number = await getNewId({ TableName: Order });
 
-        const orderDetails = productId.map((id) => ({
+        const orderDetails = products.map((product) => ({
             order_id: newIdOrder,
-            product_id: id,
+            product_id: product.productId,
+            quantity: product.quantity,
         }));
 
         await OrderDetail.bulkCreate(orderDetails);

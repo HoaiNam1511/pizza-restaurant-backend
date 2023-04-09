@@ -78,6 +78,10 @@ exports.OrderDetail = connect_1.db.define('order_details', {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
+    quantity: {
+        type: sequelize_1.DataTypes.INTEGER,
+        allowNull: false,
+    },
 });
 exports.Customer.hasMany(exports.Order, {
     foreignKey: 'customer_id',

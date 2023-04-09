@@ -18,6 +18,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            quantity: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
             createAt: Sequelize.DATE,
             updateAt: Sequelize.DATE,
         });

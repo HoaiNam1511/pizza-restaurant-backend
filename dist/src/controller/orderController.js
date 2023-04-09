@@ -15,10 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.update = exports.create = exports.get = void 0;
 const order_1 = require("../model/order");
 const product_1 = __importDefault(require("../model/product"));
-const moment = require('moment');
+const moment_1 = __importDefault(require("moment"));
+const controller_1 = require("../controller/");
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const response = yield order_1.Order.findAll({
+        const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
+        const offSet = (page - 1) * limit;
+        const response = yield order_1.Order.findAndCountAll({
             include: [
                 {
                     model: order_1.Customer,
@@ -28,8 +31,16 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     as: 'products',
                 },
             ],
+            offset: page ? offSet : 0,
+            limit: limit ? +limit : null,
+            order: [[sortBy, orderBy]],
         });
-        res.send(response);
+        const rowCount = yield order_1.Order.count();
+        const totalPage = Math.ceil(rowCount / limit);
+        res.send({
+            totalPage: totalPage,
+            data: response.rows,
+        });
     }
     catch (err) {
         console.log(err);
@@ -42,41 +53,35 @@ const createCode = ({ paymentMethod, newIdCustomer }) => {
     code += `ifc${newIdCustomer}`;
     return code;
 };
-const getNewId = ({ TableName }) => __awaiter(void 0, void 0, void 0, function* () {
-    const newId = yield TableName.findOne({
-        attributes: ['id'],
-        order: [['id', 'DESC']],
-    });
-    return newId.id;
-});
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { customerName, address, email, phoneNumber, paymentMethod, productId, } = req.body;
+        const { customerName, address, email, phoneNumber, paymentMethod, products, } = req.body;
         //Create string date for code
         let dateNow = new Date();
         // Create new user
         yield order_1.Customer.create({
             name: customerName,
             address: address,
-            email: email,
+            email: email.toLowerCase(),
             phone_number: phoneNumber,
         });
         //Get new id off customer
-        const newIdCustomer = yield getNewId({ TableName: order_1.Customer });
+        const newIdCustomer = yield (0, controller_1.getNewId)({ TableName: order_1.Customer });
         // Create code
         const code = createCode({ paymentMethod, newIdCustomer });
         yield order_1.Order.create({
             order_code: code,
             customer_id: newIdCustomer,
-            order_date: moment(dateNow, 'MM-DD-YYYY'),
+            order_date: (0, moment_1.default)(dateNow, 'MM-DD-YYYY'),
             order_status: 'pending',
             payment_method: paymentMethod,
             payment_status: 'unpaid',
         });
-        const newIdOrder = yield getNewId({ TableName: order_1.Order });
-        const orderDetails = productId.map((id) => ({
+        const newIdOrder = yield (0, controller_1.getNewId)({ TableName: order_1.Order });
+        const orderDetails = products.map((product) => ({
             order_id: newIdOrder,
-            product_id: id,
+            product_id: product.productId,
+            quantity: product.quantity,
         }));
         yield order_1.OrderDetail.bulkCreate(orderDetails);
         res.send('Created order');
