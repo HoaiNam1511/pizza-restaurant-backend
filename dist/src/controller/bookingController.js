@@ -126,6 +126,7 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
         const offSet = (page - 1) * limit;
         const response = yield booking_1.default.findAndCountAll({
+            include: [{ model: table_1.default }],
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],

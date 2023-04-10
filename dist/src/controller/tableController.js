@@ -16,11 +16,23 @@ exports.getAll = void 0;
 const table_1 = __importDefault(require("../model/table"));
 const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield table_1.default.findAll({
-            where: {
-                table_used: false,
-            },
-        });
+        const { used } = req.query;
+        let condition = {};
+        if (used === 'true') {
+            condition = {
+                where: {
+                    table_used: true,
+                },
+            };
+        }
+        else if (used === 'false') {
+            condition = {
+                where: {
+                    table_used: false,
+                },
+            };
+        }
+        const result = yield table_1.default.findAll(condition);
         res.send(result);
     }
     catch (err) {

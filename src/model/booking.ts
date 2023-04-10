@@ -1,5 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { db } from '../config/connect';
+import Table from './table';
+import { table } from 'console';
 
 const Booking = db.define('bookings', {
     id: {
@@ -44,6 +46,14 @@ const Booking = db.define('bookings', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+});
+
+Table.hasOne(Booking, {
+    foreignKey: 'table_id',
+});
+
+Booking.belongsTo(Table, {
+    foreignKey: 'table_id',
 });
 
 export default Booking;

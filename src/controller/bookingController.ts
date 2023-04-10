@@ -130,7 +130,6 @@ export const update = async (
             note,
             tableId,
         }: Booking = req.body;
-
         if (bookingStatus === 'done' || bookingStatus === 'cancel') {
             if (tableId) {
                 updateStatusTable(tableId);
@@ -174,6 +173,7 @@ export const getAll = async (
         }: QueryParams = req.query;
         const offSet = (page - 1) * limit;
         const response = await Booking.findAndCountAll({
+            include: [{ model: Table }],
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
