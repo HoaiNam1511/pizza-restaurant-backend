@@ -55,15 +55,15 @@ const createCode = ({ paymentMethod, newIdCustomer }) => {
 };
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { customerName, address, email, phoneNumber, paymentMethod, products, } = req.body;
+        const { name, address, email, phone, paymentMethod, products, } = req.body;
         //Create string date for code
         let dateNow = new Date();
         // Create new user
         yield order_1.Customer.create({
-            name: customerName,
+            name: name,
             address: address,
             email: email.toLowerCase(),
-            phone_number: phoneNumber,
+            phone_number: phone,
         });
         //Get new id off customer
         const newIdCustomer = yield (0, controller_1.getNewId)({ TableName: order_1.Customer });
@@ -82,6 +82,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             order_id: newIdOrder,
             product_id: product.productId,
             quantity: product.quantity,
+            size: product.size,
         }));
         yield order_1.OrderDetail.bulkCreate(orderDetails);
         res.send('Created order');

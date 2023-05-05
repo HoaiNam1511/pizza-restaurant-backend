@@ -26,33 +26,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const route = require('./src/routers/index');
-//import route from './src/routers/index'
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 8080;
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const bodyParser = require('body-parser');
-const dotenv = __importStar(require("dotenv"));
-dotenv.config();
-app.use((0, cookie_parser_1.default)());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', '*'],
-    credentials: true,
-}));
-app.get('/', (req, res) => {
-    res.send('GET request to the homepage');
-});
-// app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(bodyParser.urlencoded({
-    extended: true,
-}));
-app.use('/images', express.static('images'));
-route(app);
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-});
+const express_1 = __importDefault(require("express"));
+const router = express_1.default.Router();
+const accountController = __importStar(require("../controller/accountController"));
+const middlewareController = __importStar(require("../controller/middlewareController"));
+router.post('/create', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.create);
+router.put('/update/:id', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.update);
+router.delete('/delete/:id', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.deleteAccount);
+router.get('/get', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.get);
+router.get('/', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.get);
+exports.default = router;

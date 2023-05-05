@@ -36,4 +36,8 @@ router.post('/create', productController.create);
 router.get('/get', productController.getAll);
 router.put('/update/:id', productController.updateProduct);
 router.delete('/delete/:id', productController.deleteProduct);
+router.get('get/:id', productController.getOne);
+router.get('/:id', productController.getOne);
+router.get('/', productController.filterProduct);
+router.get('/', productController.getAll);
 exports.default = router;

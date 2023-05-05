@@ -1,15 +1,16 @@
 import Booking from '../model/booking';
 import Table from '../model/table';
 import { Request, Response } from 'express';
-import { QueryParams } from './index';
+import { Query } from './index';
 import moment from 'moment';
+const { Op } = require('sequelize');
 
 interface Booking {
     customerName: string;
-    customerEmail: string;
-    customerPhone: string;
-    bookingTime: Date;
-    bookingDate: Date;
+    email: string;
+    phone: string;
+    time: Date;
+    date: Date;
     partySize: number;
     bookingStatus: string;
     note: string;
@@ -26,17 +27,13 @@ export const getNewTable = async (
     try {
         let newTableId: { id: number };
         //If table is null will get new table
-        newTableId = await Table.findOne(
-            {
-                attributes: ['id'],
+        newTableId = await Table.findOne({
+            attributes: ['id'],
+            where: {
+                table_used: false,
+                table_size: { [Op.gte]: tableSize },
             },
-            {
-                where: {
-                    table_used: false,
-                    table_size: tableSize,
-                },
-            }
-        );
+        });
         updateStatusTable(newTableId.id);
         return newTableId.id;
     } catch (err) {
@@ -77,13 +74,13 @@ export const create = async (
         let newTableId: number | undefined;
         const {
             customerName,
-            customerEmail,
-            customerPhone,
-            bookingTime,
-            bookingDate,
+            email,
+            phone,
+            time,
+            date,
             partySize,
-            bookingStatus,
-            note,
+            bookingStatus = 'pending',
+            note = '',
             tableId = null,
         }: Booking = req.body;
 
@@ -98,10 +95,10 @@ export const create = async (
 
         await Booking.create({
             customer_name: customerName,
-            customer_email: customerEmail,
-            customer_phone: customerPhone,
-            booking_date: moment(bookingDate),
-            booking_time: bookingTime,
+            customer_email: email,
+            customer_phone: phone,
+            booking_date: moment(date),
+            booking_time: time,
             party_size: partySize,
             booking_status: bookingStatus,
             table_id: tableId ? tableId : newTableId,
@@ -121,15 +118,16 @@ export const update = async (
         const { id }: BookingParam = req.params;
         const {
             customerName,
-            customerEmail,
-            customerPhone,
-            bookingTime,
-            bookingDate,
+            email,
+            phone,
+            time,
+            date,
             partySize,
             bookingStatus,
             note,
             tableId,
         }: Booking = req.body;
+
         if (bookingStatus === 'done' || bookingStatus === 'cancel') {
             if (tableId) {
                 updateStatusTable(tableId);
@@ -139,10 +137,10 @@ export const update = async (
         await Booking.update(
             {
                 customer_name: customerName,
-                customer_email: customerEmail,
-                customer_phone: customerPhone,
-                booking_date: moment(bookingDate),
-                booking_time: bookingTime,
+                customer_email: email,
+                customer_phone: phone,
+                booking_date: moment(date),
+                booking_time: time,
                 party_size: partySize,
                 booking_status: bookingStatus,
                 table_id: tableId,
@@ -161,7 +159,7 @@ export const update = async (
 };
 
 export const getAll = async (
-    req: Request<{}, {}, {}, QueryParams>,
+    req: Request<{}, {}, {}, Query>,
     res: Response
 ) => {
     try {
@@ -170,7 +168,7 @@ export const getAll = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
-        }: QueryParams = req.query;
+        }: Query = req.query;
         const offSet = (page - 1) * limit;
         const response = await Booking.findAndCountAll({
             include: [{ model: Table }],

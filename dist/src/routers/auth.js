@@ -22,37 +22,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const route = require('./src/routers/index');
-//import route from './src/routers/index'
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const port = 8080;
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const bodyParser = require('body-parser');
-const dotenv = __importStar(require("dotenv"));
-dotenv.config();
-app.use((0, cookie_parser_1.default)());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', '*'],
-    credentials: true,
-}));
-app.get('/', (req, res) => {
-    res.send('GET request to the homepage');
-});
-// app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(bodyParser.urlencoded({
-    extended: true,
-}));
-app.use('/images', express.static('images'));
-route(app);
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
-});
+const express_1 = require("express");
+const middlewareController = __importStar(require("../controller/middlewareController"));
+const authController = __importStar(require("../controller/authController"));
+const router = (0, express_1.Router)();
+router.post('/login', authController.login);
+router.post('/refresh', authController.refreshToken);
+router.get('/role', authController.getRole);
+router.post('/logout', middlewareController.verifyToken, authController.logout);
+exports.default = router;

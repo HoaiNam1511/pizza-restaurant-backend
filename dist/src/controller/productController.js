@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.updateProduct = exports.create = exports.getAll = void 0;
+exports.deleteProduct = exports.updateProduct = exports.create = exports.getOne = exports.filterProduct = exports.getAll = void 0;
 const path_1 = __importDefault(require("path"));
 const product_1 = __importDefault(require("../model/product"));
 const relationModel_1 = require("../model/relationModel");
@@ -61,6 +61,50 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getAll = getAll;
+const filterProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { category } = req.query;
+        const productFilter = yield product_1.default.findAll({
+            include: [
+                {
+                    model: category_1.default,
+                    as: 'category',
+                    where: {
+                        id: category,
+                    },
+                },
+            ],
+        });
+        res.send({
+            data: productFilter,
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+exports.filterProduct = filterProduct;
+const getOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const product = yield product_1.default.findOne({
+            include: [
+                {
+                    model: category_1.default,
+                    as: 'category',
+                },
+            ],
+            where: {
+                id: id,
+            },
+        });
+        res.send(product);
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+exports.getOne = getOne;
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     upload(req, res, function () {
         var _a;

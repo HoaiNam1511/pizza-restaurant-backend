@@ -2,17 +2,18 @@ import { Order, Customer, OrderDetail } from '../model/order';
 import { Request, Response } from 'express';
 import Product from '../model/product';
 import moment from 'moment';
-import { QueryParams } from './index';
+import { Query } from './index';
 import { getNewId } from '../controller/';
 interface OrderProperty {
-    customerName: string;
+    name: string;
     address: string;
     email: string;
-    phoneNumber: number;
+    phone: number;
     paymentMethod: string;
     products: {
         productId: number;
         quantity: number;
+        size: string;
     }[];
 }
 
@@ -32,7 +33,7 @@ interface CreateCode {
 }
 
 export const get = async (
-    req: Request<{}, {}, {}, QueryParams>,
+    req: Request<{}, {}, {}, Query>,
     res: Response
 ): Promise<void> => {
     try {
@@ -41,7 +42,7 @@ export const get = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
-        }: QueryParams = req.query;
+        }: Query = req.query;
         const offSet = (page - 1) * limit;
 
         const response = await Order.findAndCountAll({
@@ -90,10 +91,10 @@ export const create = async (
 ): Promise<void> => {
     try {
         const {
-            customerName,
+            name,
             address,
             email,
-            phoneNumber,
+            phone,
             paymentMethod,
             products,
         }: OrderProperty = req.body;
@@ -102,10 +103,10 @@ export const create = async (
 
         // Create new user
         await Customer.create({
-            name: customerName,
+            name: name,
             address: address,
             email: email.toLowerCase(),
-            phone_number: phoneNumber,
+            phone_number: phone,
         });
 
         //Get new id off customer
@@ -128,6 +129,7 @@ export const create = async (
             order_id: newIdOrder,
             product_id: product.productId,
             quantity: product.quantity,
+            size: product.size,
         }));
 
         await OrderDetail.bulkCreate(orderDetails);

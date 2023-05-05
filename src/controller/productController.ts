@@ -4,7 +4,11 @@ import Product from '../model/product';
 import { CategoryProduct } from '../model/relationModel';
 import multer from 'multer';
 import Category from '../model/category';
-import { QueryParams } from './index';
+import { Query, Params } from './index';
+
+interface Filter {
+    category: string;
+}
 
 export interface Product extends Request {
     id?: number;
@@ -30,7 +34,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }).single('image');
 
 export const getAll = async (
-    req: Request<{}, {}, {}, QueryParams>,
+    req: Request<{}, {}, {}, Query>,
     res: Response
 ): Promise<void> => {
     try {
@@ -39,7 +43,8 @@ export const getAll = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
-        }: QueryParams = req.query;
+        }: Query = req.query;
+
         const offSet = (page - 1) * limit;
 
         const allProduct = await Product.findAndCountAll({
@@ -72,12 +77,61 @@ export const getAll = async (
     }
 };
 
+export const filterProduct = async (
+    req: Request<{}, {}, {}, Filter>,
+    res: Response
+): Promise<void> => {
+    try {
+        const { category }: Filter = req.query;
+        const productFilter = await Product.findAll({
+            include: [
+                {
+                    model: Category,
+                    as: 'category',
+                    where: {
+                        id: category,
+                    },
+                },
+            ],
+        });
+        res.send({
+            data: productFilter,
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+export const getOne = async (
+    req: Request<Params, {}, {}, {}>,
+    res: Response
+): Promise<void> => {
+    try {
+        const { id }: Params = req.params;
+        const product = await Product.findOne({
+            include: [
+                {
+                    model: Category,
+                    as: 'category',
+                },
+            ],
+            where: {
+                id: id,
+            },
+        });
+        res.send(product);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
 export const create = async (req: Request, res: Response) => {
     upload(req, res, async function () {
         let newProductId: { id: number };
         let { name, price, material, description, image, categories }: Product =
             req.body;
         const categoriesArr = JSON.parse(req.body.categories);
+
         try {
             await Product.create({
                 name: name,

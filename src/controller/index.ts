@@ -1,8 +1,12 @@
-export interface QueryParams {
+export interface Query {
     page: number;
     sortBy: string;
     orderBy: string;
     limit?: number;
+}
+
+export interface Params {
+    id: number;
 }
 
 export const getNewId = async ({

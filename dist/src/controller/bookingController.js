@@ -16,16 +16,16 @@ exports.getAll = exports.update = exports.create = exports.updateStatusTable = e
 const booking_1 = __importDefault(require("../model/booking"));
 const table_1 = __importDefault(require("../model/table"));
 const moment_1 = __importDefault(require("moment"));
+const { Op } = require('sequelize');
 const getNewTable = (tableSize) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let newTableId;
         //If table is null will get new table
         newTableId = yield table_1.default.findOne({
             attributes: ['id'],
-        }, {
             where: {
                 table_used: false,
-                table_size: tableSize,
+                table_size: { [Op.gte]: tableSize },
             },
         });
         (0, exports.updateStatusTable)(newTableId.id);
@@ -62,7 +62,7 @@ exports.updateStatusTable = updateStatusTable;
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let newTableId;
-        const { customerName, customerEmail, customerPhone, bookingTime, bookingDate, partySize, bookingStatus, note, tableId = null, } = req.body;
+        const { customerName, email, phone, time, date, partySize, bookingStatus = 'pending', note = '', tableId = null, } = req.body;
         if (!tableId) {
             newTableId = yield (0, exports.getNewTable)(partySize);
             if (newTableId) {
@@ -74,10 +74,10 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         yield booking_1.default.create({
             customer_name: customerName,
-            customer_email: customerEmail,
-            customer_phone: customerPhone,
-            booking_date: (0, moment_1.default)(bookingDate),
-            booking_time: bookingTime,
+            customer_email: email,
+            customer_phone: phone,
+            booking_date: (0, moment_1.default)(date),
+            booking_time: time,
             party_size: partySize,
             booking_status: bookingStatus,
             table_id: tableId ? tableId : newTableId,
@@ -93,7 +93,7 @@ exports.create = create;
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { customerName, customerEmail, customerPhone, bookingTime, bookingDate, partySize, bookingStatus, note, tableId, } = req.body;
+        const { customerName, email, phone, time, date, partySize, bookingStatus, note, tableId, } = req.body;
         if (bookingStatus === 'done' || bookingStatus === 'cancel') {
             if (tableId) {
                 (0, exports.updateStatusTable)(tableId);
@@ -101,10 +101,10 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         yield booking_1.default.update({
             customer_name: customerName,
-            customer_email: customerEmail,
-            customer_phone: customerPhone,
-            booking_date: (0, moment_1.default)(bookingDate),
-            booking_time: bookingTime,
+            customer_email: email,
+            customer_phone: phone,
+            booking_date: (0, moment_1.default)(date),
+            booking_time: time,
             party_size: partySize,
             booking_status: bookingStatus,
             table_id: tableId,
