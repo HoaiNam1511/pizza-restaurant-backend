@@ -1,7 +1,8 @@
-import Category from '../model/category';
-import { Request, Response } from 'express';
 import path from 'path';
 import multer from 'multer';
+import { Request, Response } from 'express';
+
+import Category from '../model/category';
 
 interface QueryParams {
     page: number;
@@ -40,23 +41,22 @@ export const getAllCategory = async (
         }: QueryParams = req.query;
         const offSet = (page - 1) * limit;
 
-        const categories = await Category.findAndCountAll({
+        const result = await Category.findAndCountAll({
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
 
-        const rowCount = await Category.count();
-        const totalPage = Math.ceil(rowCount / limit);
+        const totalPage = Math.ceil(result.count / limit);
 
         if (page) {
             res.send({
                 totalPage: totalPage,
-                data: categories.rows,
+                data: result.rows,
             });
         } else {
             res.send({
-                data: categories.rows,
+                data: result.rows,
             });
         }
     } catch (err) {

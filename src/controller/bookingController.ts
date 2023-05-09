@@ -1,10 +1,13 @@
-import Booking from '../model/booking';
-import Table from '../model/table';
-import { Request, Response } from 'express';
-import { Query } from './index';
 import moment from 'moment';
+import bcrypt from 'bcrypt';
 const { Op } = require('sequelize');
+import { Request, Response } from 'express';
 
+import Table from '../model/table';
+import Booking from '../model/booking';
+import { Query } from './index';
+import { sendMail } from '../util/mail';
+import { formEmail } from '../custom/formEmailBooking';
 interface Booking {
     customerName: string;
     email: string;
@@ -93,6 +96,8 @@ export const create = async (
             updateStatusTable(tableId);
         }
 
+        //const booking = new Booking();
+
         await Booking.create({
             customer_name: customerName,
             customer_email: email,
@@ -104,13 +109,31 @@ export const create = async (
             table_id: tableId ? tableId : newTableId,
             note: note,
         });
+
+        bcrypt
+            .hash(email, parseInt(process.env.BCRYPT_SALT as string))
+            .then((hashEmail) => {
+                const link = `${process.env.APP_URL}/booking/verify?email=${email}&token=${hashEmail}`;
+                sendMail(
+                    email,
+                    'Pizza Restaurant booking',
+                    formEmail({
+                        customerName,
+                        date,
+                        time,
+                        partySize,
+                        href: link,
+                    })
+                );
+            });
+
         res.send('created');
     } catch (err) {
         console.log(err);
     }
 };
 
-export const update = async (
+export const updateBooking = async (
     req: Request<BookingParam, {}, Booking, {}>,
     res: Response
 ) => {
@@ -187,4 +210,32 @@ export const getAll = async (
     } catch (err) {
         console.log(err);
     }
+};
+
+interface QueryVerify {
+    email: string;
+    token: string;
+}
+
+export const verifyBooking = (
+    req: Request<{}, {}, {}, QueryVerify>,
+    res: Response
+) => {
+    bcrypt.compare(req.query.email, req.query.token, async (err, result) => {
+        if (result) {
+            await Booking.update(
+                {
+                    booking_status: 'confirm',
+                },
+                {
+                    where: {
+                        customer_email: req.query.email,
+                    },
+                }
+            );
+            res.send('Verify success');
+        } else {
+            res.send('This link not define');
+        }
+    });
 };

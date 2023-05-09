@@ -1,9 +1,10 @@
 import path from 'path';
-import { Request, Response } from 'express';
-import Product from '../model/product';
-import { CategoryProduct } from '../model/relationModel';
 import multer from 'multer';
+import { Request, Response } from 'express';
+
+import Product from '../model/product';
 import Category from '../model/category';
+import { CategoryProduct } from '../model/relationModel';
 import { Query, Params } from './index';
 
 interface Filter {
@@ -19,8 +20,6 @@ export interface Product extends Request {
     image?: File | null;
     categories: number[];
 }
-
-type AsyncFunction<T> = () => Promise<T>;
 
 const storage = multer.diskStorage({
     destination: function (req: Request, file: any, cb: any) {
@@ -47,7 +46,7 @@ export const getAll = async (
 
         const offSet = (page - 1) * limit;
 
-        const allProduct = await Product.findAndCountAll({
+        const result = await Product.findAndCountAll({
             include: [
                 {
                     model: Category,
@@ -59,17 +58,16 @@ export const getAll = async (
             order: [[sortBy, orderBy]],
         });
 
-        const rowCount = await Product.count();
-        const totalPage = Math.ceil(rowCount / limit);
-
         if (page) {
+            const allProduct = await Product.count();
+            const totalPage = Math.ceil(allProduct / limit);
             res.send({
                 totalPage: totalPage,
-                data: allProduct.rows,
+                data: result.rows,
             });
         } else {
             res.send({
-                data: allProduct.rows,
+                data: result.rows,
             });
         }
     } catch (err) {

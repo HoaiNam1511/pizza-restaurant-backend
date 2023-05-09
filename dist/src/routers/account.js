@@ -22,17 +22,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const router = express_1.default.Router();
+const express_1 = require("express");
 const accountController = __importStar(require("../controller/accountController"));
-const middlewareController = __importStar(require("../controller/middlewareController"));
-router.post('/create', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.create);
-router.put('/update/:id', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.update);
-router.delete('/delete/:id', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.deleteAccount);
-router.get('/get', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.get);
-router.get('/', middlewareController.verifyToken, middlewareController.checkAdminAuth, accountController.get);
+const middleware = __importStar(require("../middleware"));
+const router = (0, express_1.Router)();
+router.post('/create', middleware.verifyToken, middleware.checkAdminAuth, accountController.create);
+router.put('/update/:id', middleware.verifyToken, middleware.checkAdminAuth, accountController.update);
+router.delete('/delete/:id', middleware.verifyToken, middleware.checkAdminAuth, accountController.deleteAccount);
+router.get('/get', middleware.verifyToken, middleware.checkAdminAuth, accountController.get);
+router.get('/', middleware.verifyToken, middleware.checkAdminAuth, accountController.get);
 exports.default = router;

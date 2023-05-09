@@ -12,11 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAll = exports.update = exports.create = exports.updateStatusTable = exports.getNewTable = void 0;
-const booking_1 = __importDefault(require("../model/booking"));
-const table_1 = __importDefault(require("../model/table"));
+exports.verifyBooking = exports.getAll = exports.updateBooking = exports.create = exports.updateStatusTable = exports.getNewTable = void 0;
 const moment_1 = __importDefault(require("moment"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const { Op } = require('sequelize');
+const table_1 = __importDefault(require("../model/table"));
+const booking_1 = __importDefault(require("../model/booking"));
+const mail_1 = require("../util/mail");
+const formEmailBooking_1 = require("../custom/formEmailBooking");
 const getNewTable = (tableSize) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let newTableId;
@@ -72,6 +75,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         else {
             (0, exports.updateStatusTable)(tableId);
         }
+        //const booking = new Booking();
         yield booking_1.default.create({
             customer_name: customerName,
             customer_email: email,
@@ -83,6 +87,18 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             table_id: tableId ? tableId : newTableId,
             note: note,
         });
+        bcrypt_1.default
+            .hash(email, parseInt(process.env.BCRYPT_SALT))
+            .then((hashEmail) => {
+            const link = `${process.env.APP_URL}/booking/verify?email=${email}&token=${hashEmail}`;
+            (0, mail_1.sendMail)(email, 'Pizza Restaurant booking', (0, formEmailBooking_1.formEmail)({
+                customerName,
+                date,
+                time,
+                partySize,
+                href: link,
+            }));
+        });
         res.send('created');
     }
     catch (err) {
@@ -90,7 +106,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.create = create;
-const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const updateBooking = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { customerName, email, phone, time, date, partySize, bookingStatus, note, tableId, } = req.body;
@@ -120,7 +136,7 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         console.log(err);
     }
 });
-exports.update = update;
+exports.updateBooking = updateBooking;
 const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
@@ -143,3 +159,21 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getAll = getAll;
+const verifyBooking = (req, res) => {
+    bcrypt_1.default.compare(req.query.email, req.query.token, (err, result) => __awaiter(void 0, void 0, void 0, function* () {
+        if (result) {
+            yield booking_1.default.update({
+                booking_status: 'confirm',
+            }, {
+                where: {
+                    customer_email: req.query.email,
+                },
+            });
+            res.send('Verify success');
+        }
+        else {
+            res.send('This link not define');
+        }
+    }));
+};
+exports.verifyBooking = verifyBooking;

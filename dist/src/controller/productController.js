@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteProduct = exports.updateProduct = exports.create = exports.getOne = exports.filterProduct = exports.getAll = void 0;
 const path_1 = __importDefault(require("path"));
-const product_1 = __importDefault(require("../model/product"));
-const relationModel_1 = require("../model/relationModel");
 const multer_1 = __importDefault(require("multer"));
+const product_1 = __importDefault(require("../model/product"));
 const category_1 = __importDefault(require("../model/category"));
+const relationModel_1 = require("../model/relationModel");
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'images');
@@ -31,7 +31,7 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
         const offSet = (page - 1) * limit;
-        const allProduct = yield product_1.default.findAndCountAll({
+        const result = yield product_1.default.findAndCountAll({
             include: [
                 {
                     model: category_1.default,
@@ -42,17 +42,17 @@ const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
-        const rowCount = yield product_1.default.count();
-        const totalPage = Math.ceil(rowCount / limit);
         if (page) {
+            const allProduct = yield product_1.default.count();
+            const totalPage = Math.ceil(allProduct / limit);
             res.send({
                 totalPage: totalPage,
-                data: allProduct.rows,
+                data: result.rows,
             });
         }
         else {
             res.send({
-                data: allProduct.rows,
+                data: result.rows,
             });
         }
     }

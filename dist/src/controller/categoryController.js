@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteCategory = exports.updateProduct = exports.create = exports.getAllCategory = void 0;
-const category_1 = __importDefault(require("../model/category"));
 const path_1 = __importDefault(require("path"));
 const multer_1 = __importDefault(require("multer"));
+const category_1 = __importDefault(require("../model/category"));
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'images');
@@ -29,22 +29,21 @@ const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
         const offSet = (page - 1) * limit;
-        const categories = yield category_1.default.findAndCountAll({
+        const result = yield category_1.default.findAndCountAll({
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
-        const rowCount = yield category_1.default.count();
-        const totalPage = Math.ceil(rowCount / limit);
+        const totalPage = Math.ceil(result.count / limit);
         if (page) {
             res.send({
                 totalPage: totalPage,
-                data: categories.rows,
+                data: result.rows,
             });
         }
         else {
             res.send({
-                data: categories.rows,
+                data: result.rows,
             });
         }
     }

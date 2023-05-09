@@ -1,12 +1,14 @@
-import * as bookingController from '../controller/authController';
 import { Router } from 'express';
-import * as middlewareController from '../controller/middlewareController';
-import * as authController from '../controller/authController';
+import * as middlewareController from '../middleware';
+import * as authController from '../auth';
 const router = Router();
 
 router.post('/login', authController.login);
 router.post('/refresh', authController.refreshToken);
-router.get('/role', authController.getRole);
+router.post('/forgot', authController.forgotPassword);
+router.post('/reset', authController.resetPass);
 router.post('/logout', middlewareController.verifyToken, authController.logout);
+router.get('/confirm', authController.confirmReset);
+router.get('/role', authController.getRole);
 
 export default router;

@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteAccount = exports.update = exports.create = exports.get = void 0;
 const account_1 = require("../model/account");
-const get = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
     const offSet = (page - 1) * limit;
     try {
@@ -30,7 +30,9 @@ const get = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
+        const totalPage = Math.ceil(result.count / limit);
         res.send({
+            totalPage: totalPage,
             data: result.rows,
         });
     }
@@ -39,7 +41,7 @@ const get = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.get = get;
-const create = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password, status, role } = req.body;
     let newUser, checkAccountAlready;
     try {
@@ -83,10 +85,9 @@ const create = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.create = create;
-const update = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { email, username, password, status, role } = req.body;
-    console.log('come update');
     try {
         yield account_1.Account.update({
             email: email,
@@ -115,7 +116,7 @@ const update = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.update = update;
-const deleteAccount = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { name } = req.headers;
     try {

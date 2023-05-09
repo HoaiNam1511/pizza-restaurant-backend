@@ -1,38 +1,40 @@
 import express from 'express';
-const router = express.Router();
+import { Router } from 'express';
 import * as accountController from '../controller/accountController';
-import * as middlewareController from '../controller/middlewareController';
+import * as middleware from '../middleware';
+
+const router = Router();
 
 router.post(
     '/create',
-    middlewareController.verifyToken,
-    middlewareController.checkAdminAuth,
+    middleware.verifyToken,
+    middleware.checkAdminAuth,
     accountController.create
 );
 
 router.put(
     '/update/:id',
-    middlewareController.verifyToken,
-    middlewareController.checkAdminAuth,
+    middleware.verifyToken,
+    middleware.checkAdminAuth,
     accountController.update
 );
 
 router.delete(
     '/delete/:id',
-    middlewareController.verifyToken,
-    middlewareController.checkAdminAuth,
+    middleware.verifyToken,
+    middleware.checkAdminAuth,
     accountController.deleteAccount
 );
 router.get(
     '/get',
-    middlewareController.verifyToken,
-    middlewareController.checkAdminAuth,
+    middleware.verifyToken,
+    middleware.checkAdminAuth,
     accountController.get
 );
 router.get(
     '/',
-    middlewareController.verifyToken,
-    middlewareController.checkAdminAuth,
+    middleware.verifyToken,
+    middleware.checkAdminAuth,
     accountController.get
 );
 

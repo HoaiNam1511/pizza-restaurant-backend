@@ -1,9 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 require('dotenv').config();
-interface CustomRequest extends Request {
-    user?: any;
-}
 
 export const verifyToken = (req: any, res: Response, next: any) => {
     const token: string = req.headers.token;
@@ -21,7 +18,7 @@ export const verifyToken = (req: any, res: Response, next: any) => {
             }
         );
     } else {
-        console.log('You need login');
+        res.send('You need login');
     }
 };
 

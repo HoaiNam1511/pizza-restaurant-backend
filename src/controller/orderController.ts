@@ -1,9 +1,10 @@
-import { Order, Customer, OrderDetail } from '../model/order';
-import { Request, Response } from 'express';
-import Product from '../model/product';
 import moment from 'moment';
+import { Request, Response } from 'express';
+
+import Product from '../model/product';
 import { Query } from './index';
 import { getNewId } from '../controller/';
+import { Order, Customer, OrderDetail } from '../model/order';
 interface OrderProperty {
     name: string;
     address: string;
@@ -45,7 +46,7 @@ export const get = async (
         }: Query = req.query;
         const offSet = (page - 1) * limit;
 
-        const response = await Order.findAndCountAll({
+        const result = await Order.findAndCountAll({
             include: [
                 {
                     model: Customer,
@@ -60,12 +61,10 @@ export const get = async (
             order: [[sortBy, orderBy]],
         });
 
-        const rowCount = await Order.count();
-        const totalPage = Math.ceil(rowCount / limit);
-
+        const totalPage = Math.ceil(result.count / limit);
         res.send({
             totalPage: totalPage,
-            data: response.rows,
+            data: result.rows,
         });
     } catch (err) {
         console.log(err);

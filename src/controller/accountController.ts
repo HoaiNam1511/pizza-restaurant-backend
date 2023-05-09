@@ -1,5 +1,5 @@
 import { Role, Account_role, Account } from '../model/account';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
 interface Body {
     email: string;
@@ -22,8 +22,7 @@ interface QueryParams {
 
 export const get = async (
     req: Request<{}, {}, Body, QueryParams>,
-    res: Response,
-    next: any
+    res: Response
 ) => {
     const {
         page = 0,
@@ -49,7 +48,10 @@ export const get = async (
             order: [[sortBy, orderBy]],
         });
 
+        const totalPage = Math.ceil(result.count / limit);
+
         res.send({
+            totalPage: totalPage,
             data: result.rows,
         });
     } catch (error) {
@@ -57,11 +59,7 @@ export const get = async (
     }
 };
 
-export const create = async (
-    req: Request<{}, {}, Body, {}>,
-    res: Response,
-    next: NextFunction
-) => {
+export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
     const { email, username, password, status, role }: Body = req.body;
     let newUser: any, checkAccountAlready: any;
     try {
@@ -108,12 +106,10 @@ export const create = async (
 
 export const update = async (
     req: Request<Params, {}, Body, {}>,
-    res: Response,
-    next: NextFunction
+    res: Response
 ) => {
     const { id }: Params = req.params;
     const { email, username, password, status, role }: Body = req.body;
-    console.log('come update');
     try {
         await Account.update(
             {
@@ -148,7 +144,7 @@ export const update = async (
     }
 };
 
-export const deleteAccount = async (req: any, res: Response, next: any) => {
+export const deleteAccount = async (req: any, res: Response) => {
     const { id }: Params = req.params;
     const { name } = req.headers;
     try {

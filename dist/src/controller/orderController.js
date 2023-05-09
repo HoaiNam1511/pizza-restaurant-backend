@@ -13,15 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.update = exports.create = exports.get = void 0;
-const order_1 = require("../model/order");
-const product_1 = __importDefault(require("../model/product"));
 const moment_1 = __importDefault(require("moment"));
+const product_1 = __importDefault(require("../model/product"));
 const controller_1 = require("../controller/");
+const order_1 = require("../model/order");
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
         const offSet = (page - 1) * limit;
-        const response = yield order_1.Order.findAndCountAll({
+        const result = yield order_1.Order.findAndCountAll({
             include: [
                 {
                     model: order_1.Customer,
@@ -35,11 +35,10 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
-        const rowCount = yield order_1.Order.count();
-        const totalPage = Math.ceil(rowCount / limit);
+        const totalPage = Math.ceil(result.count / limit);
         res.send({
             totalPage: totalPage,
-            data: response.rows,
+            data: result.rows,
         });
     }
     catch (err) {

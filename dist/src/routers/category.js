@@ -25,10 +25,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const categoryController = __importStar(require("../controller/categoryController"));
 const express_1 = require("express");
+const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
-router.get('/get', categoryController.getAllCategory);
-router.post('/create', categoryController.create);
-router.put('/update/:id', categoryController.updateProduct);
-router.delete('/delete/:id', categoryController.deleteCategory);
-router.get('/', categoryController.getAllCategory);
+router.get('/get', middleware.verifyToken, categoryController.getAllCategory);
+router.post('/create', middleware.verifyToken, categoryController.create);
+router.put('/update/:id', middleware.verifyToken, categoryController.updateProduct);
+router.delete('/delete/:id', middleware.verifyToken, categoryController.deleteCategory);
+router.get('/', middleware.verifyToken, categoryController.getAllCategory);
 exports.default = router;

@@ -1,11 +1,16 @@
 import * as bookingController from '../controller/bookingController';
 import { Router } from 'express';
-
+import * as middleware from '../middleware';
 const router = Router();
 
 router.post('/create', bookingController.create);
-router.put('/update/:id', bookingController.update);
-router.get('/get', bookingController.getAll);
-router.get('/', bookingController.getAll);
+router.put(
+    '/update/:id',
+    middleware.verifyToken,
+    bookingController.updateBooking
+);
+router.get('/get', middleware.verifyToken, bookingController.getAll);
+router.get('/verify', bookingController.verifyBooking);
+router.get('/', middleware.verifyToken, bookingController.getAll);
 
 export default router;

@@ -25,9 +25,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const orderController = __importStar(require("../controller/orderController"));
+const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
 router.post('/create', orderController.create);
-router.put('/update/:id', orderController.update);
-router.get('/get', orderController.get);
-router.get('/', orderController.get);
+router.put('/update/:id', middleware.verifyToken, orderController.update);
+router.get('/get', middleware.verifyToken, orderController.get);
+router.get('/', middleware.verifyToken, orderController.get);
 exports.default = router;

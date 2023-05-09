@@ -1,9 +1,11 @@
 import express from 'express';
-import { Router } from 'express';
-const router = express.Router();
 import * as tableController from '../controller/tableController';
+import * as middleware from '../middleware';
+import { Router } from 'express';
 
-router.get('/get', tableController.getAll);
-router.get('/', tableController.getAll);
+const router = Router();
+
+router.get('/get', middleware.verifyToken, tableController.getAll);
+router.get('/', middleware.verifyToken, tableController.getAll);
 
 export default router;
