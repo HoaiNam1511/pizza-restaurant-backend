@@ -27,9 +27,9 @@ const categoryController = __importStar(require("../controller/categoryControlle
 const express_1 = require("express");
 const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
-router.get('/get', middleware.verifyToken, categoryController.getAllCategory);
 router.post('/create', middleware.verifyToken, categoryController.create);
 router.put('/update/:id', middleware.verifyToken, categoryController.updateProduct);
 router.delete('/delete/:id', middleware.verifyToken, categoryController.deleteCategory);
-router.get('/', middleware.verifyToken, categoryController.getAllCategory);
+router.get('/get', categoryController.getAllCategory);
+router.get('/', categoryController.getAllCategory);
 exports.default = router;

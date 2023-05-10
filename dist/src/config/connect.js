@@ -14,6 +14,7 @@ const { Sequelize } = require('sequelize');
 const db = new Sequelize('pizza_restaurant', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
+    timezone: '+07:00',
     define: {
         timestamps: false,
     },
@@ -23,10 +24,10 @@ exports.db = db;
 let connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield db.authenticate();
-        console.log("Connection has been established successfully.");
+        console.log('Connection has been established successfully.');
     }
     catch (error) {
-        console.error("Unable to connect to the database:", error);
+        console.error('Unable to connect to the database:', error);
     }
 });
 connectDB();

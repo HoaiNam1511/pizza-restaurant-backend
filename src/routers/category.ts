@@ -4,7 +4,6 @@ import * as middleware from '../middleware';
 
 const router = Router();
 
-router.get('/get', middleware.verifyToken, categoryController.getAllCategory);
 router.post('/create', middleware.verifyToken, categoryController.create);
 router.put(
     '/update/:id',
@@ -16,6 +15,7 @@ router.delete(
     middleware.verifyToken,
     categoryController.deleteCategory
 );
-router.get('/', middleware.verifyToken, categoryController.getAllCategory);
+router.get('/get', categoryController.getAllCategory);
+router.get('/', categoryController.getAllCategory);
 
 export default router;

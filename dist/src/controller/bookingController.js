@@ -177,3 +177,13 @@ const verifyBooking = (req, res) => {
     }));
 };
 exports.verifyBooking = verifyBooking;
+//remove booking after 1 day
+const removeOldBookingRecords = () => {
+    const oneWeekAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
+    booking_1.default.destroy({
+        where: {
+            createdAt: { [Op.lte]: oneWeekAgo },
+        },
+    });
+};
+setInterval(removeOldBookingRecords, 1 * 24 * 60 * 60 * 1000);

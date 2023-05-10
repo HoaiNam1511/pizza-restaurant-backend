@@ -38,6 +38,6 @@ router.put('/update/:id', middleware.verifyToken, productController.updateProduc
 router.delete('/delete/:id', middleware.verifyToken, productController.deleteProduct);
 router.get('get/:id', productController.getOne);
 router.get('/:id', productController.getOne);
-router.get('/', productController.filterProduct);
+// router.get('/', productController.filterProduct);
 router.get('/', productController.getAll);
 exports.default = router;

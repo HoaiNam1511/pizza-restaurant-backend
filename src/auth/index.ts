@@ -1,11 +1,9 @@
-import { update } from './../controller/accountController';
 import { sendMail } from './../util/mail';
 import jwt from 'jsonwebtoken';
 import { Account, Role } from '../model/account';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import Token from '../model/token';
 import bcrypt from 'bcrypt';
-import { formEmail } from '../custom/formEmailBooking';
 import { FormEmailForgotPassword } from '../custom/formEmailResetPassword';
 
 //const secretKey = '15112001';
@@ -61,8 +59,7 @@ const generateRefreshToken = (account: InfoAccountToken) => {
 
 export const login = async (
     req: Request<{}, {}, AccountLogin, {}>,
-    res: Response,
-    next: NextFunction
+    res: Response
 ) => {
     const { username, password }: AccountLogin = req.body;
     try {
@@ -121,13 +118,9 @@ export const login = async (
     }
 };
 
-export const refreshToken = (
-    req: Request<{}, {}, {}, {}>,
-    res: Response,
-    next: any
-) => {
+export const refreshToken = (req: Request<{}, {}, {}, {}>, res: Response) => {
     // Get refresh token from cookies
-    let refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.send('You are not authenticated');
     //Check refresh token
     if (!refreshTokenArr.includes(refreshToken)) {
@@ -143,8 +136,8 @@ export const refreshToken = (
             refreshTokenArr = refreshTokenArr.filter(
                 (token) => token !== refreshToken
             );
-            let newAccessToken = generateAccessToken(user);
-            let newRefreshToken = generateRefreshToken(user);
+            const newAccessToken = generateAccessToken(user);
+            const newRefreshToken = generateRefreshToken(user);
             refreshTokenArr.push(newRefreshToken);
             res.cookie('refreshToken', newRefreshToken, {
                 httpOnly: true,
@@ -158,27 +151,6 @@ export const refreshToken = (
             });
         }
     );
-};
-
-export const checkLogin = async (req: any, res: Response, next: any) => {
-    const token = req.cookies?.token;
-    const id: any = jwt.verify(token, process.env.ACCESS_TOKEN_KEY as string);
-    const account = await Account.findOne({
-        where: {
-            id: id,
-        },
-    });
-
-    try {
-        if (account.id) {
-            req.data = account;
-            next();
-        } else {
-            res.send('/login');
-        }
-    } catch (error) {
-        console.log(error);
-    }
 };
 
 export const logout = (req: Request<{}, {}, {}, {}>, res: Response) => {
@@ -203,7 +175,6 @@ export const forgotPassword = async (
     res: Response
 ) => {
     const { email }: BodyForgotPass = req.body;
-    console.log(email);
 
     try {
         const result = await Account.findOne({
@@ -251,6 +222,7 @@ export const resetPass = async (
                         href: link,
                     })
                 );
+
                 res.send({
                     status: true,
                     message: 'Please check your email',

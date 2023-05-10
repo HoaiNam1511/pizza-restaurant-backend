@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmReset = exports.resetPass = exports.forgotPassword = exports.getRole = exports.logout = exports.checkLogin = exports.refreshToken = exports.login = void 0;
+exports.confirmReset = exports.resetPass = exports.forgotPassword = exports.getRole = exports.logout = exports.refreshToken = exports.login = void 0;
 const mail_1 = require("./../util/mail");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const account_1 = require("../model/account");
@@ -32,7 +32,7 @@ const generateRefreshToken = (account) => {
         role: account.role,
     }, process.env.REFRESH_TOKEN_KEY, { expiresIn: '365d' });
 };
-const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
     try {
         let message, accessToken, refreshToken, action;
@@ -92,9 +92,9 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.login = login;
-const refreshToken = (req, res, next) => {
+const refreshToken = (req, res) => {
     // Get refresh token from cookies
-    let refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken)
         return res.send('You are not authenticated');
     //Check refresh token
@@ -106,8 +106,8 @@ const refreshToken = (req, res, next) => {
             console.log(err);
         }
         refreshTokenArr = refreshTokenArr.filter((token) => token !== refreshToken);
-        let newAccessToken = generateAccessToken(user);
-        let newRefreshToken = generateRefreshToken(user);
+        const newAccessToken = generateAccessToken(user);
+        const newRefreshToken = generateRefreshToken(user);
         refreshTokenArr.push(newRefreshToken);
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
@@ -122,29 +122,6 @@ const refreshToken = (req, res, next) => {
     });
 };
 exports.refreshToken = refreshToken;
-const checkLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;
-    const id = jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN_KEY);
-    const account = yield account_1.Account.findOne({
-        where: {
-            id: id,
-        },
-    });
-    try {
-        if (account.id) {
-            req.data = account;
-            next();
-        }
-        else {
-            res.send('/login');
-        }
-    }
-    catch (error) {
-        console.log(error);
-    }
-});
-exports.checkLogin = checkLogin;
 const logout = (req, res) => {
     res.clearCookie('refreshToken');
     refreshTokenArr = refreshTokenArr.filter((token) => token !== req.cookies.refreshToken);
@@ -163,7 +140,6 @@ const getRole = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getRole = getRole;
 const forgotPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = req.body;
-    console.log(email);
     try {
         const result = yield account_1.Account.findOne({
             attributes: ['email', 'username'],
