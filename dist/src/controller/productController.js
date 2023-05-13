@@ -140,7 +140,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
                 res.send({
-                    message: 'Add category success',
+                    message: 'Add product success',
                     action: 'add',
                 });
             }
@@ -186,7 +186,7 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             try {
                 yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
                 res.send({
-                    message: 'Update category success',
+                    message: 'Update product success',
                     action: 'update',
                 });
             }
@@ -211,7 +211,7 @@ const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             },
         });
         res.send({
-            message: 'Delete category success',
+            message: 'Delete product success',
             action: 'delete',
         });
     }

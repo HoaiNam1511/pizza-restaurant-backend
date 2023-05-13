@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formEmail = void 0;
+const moment_1 = __importDefault(require("moment"));
 const formEmail = ({ customerName, time, date, partySize, href, }) => {
     const emailHTML = `
     <table
@@ -59,7 +63,7 @@ const formEmail = ({ customerName, time, date, partySize, href, }) => {
                         style="min-width: 120px; display: inline-block"
                         >Date</strong
                     >
-                    ${date}
+                    ${(0, moment_1.default)(date, 'YYYY-MM-DD').format('DD/MM/YYYY')}
                 </p>
                 <p style="margin: 8px 0px; font-size: 14px">
                     <strong

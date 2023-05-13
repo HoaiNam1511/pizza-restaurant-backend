@@ -24,6 +24,11 @@ interface BookingParam {
     id: number;
 }
 
+interface QueryVerify {
+    email: string;
+    token: string;
+}
+
 export const getNewTable = async (
     tableSize: number
 ): Promise<number | undefined> => {
@@ -33,12 +38,28 @@ export const getNewTable = async (
         newTableId = await Table.findOne({
             attributes: ['id'],
             where: {
-                table_used: false,
-                table_size: { [Op.gte]: tableSize },
+                [Op.and]: {
+                    table_used: false,
+                    table_size: { [Op.gte]: tableSize },
+                },
             },
         });
         updateStatusTable(newTableId.id);
         return newTableId.id;
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+export const getTableWait = async () => {
+    try {
+        const tableWaitId = await Table.findOne({
+            attributes: ['id'],
+            where: {
+                table_size: 0,
+            },
+        });
+        return tableWaitId.id;
     } catch (err) {
         console.log(err);
     }
@@ -74,7 +95,8 @@ export const create = async (
     res: Response
 ) => {
     try {
-        let newTableId: number | undefined;
+        let newTableId: number | undefined | null;
+        let tableWaitId: number | undefined | null;
         const {
             customerName,
             email,
@@ -87,16 +109,14 @@ export const create = async (
             tableId = null,
         }: Booking = req.body;
 
-        if (!tableId) {
-            newTableId = await getNewTable(partySize);
-            if (newTableId) {
-                updateStatusTable(newTableId);
-            }
-        } else {
+        //If table id define => create by admin
+        if (tableId) {
             updateStatusTable(tableId);
         }
-
-        //const booking = new Booking();
+        //Auto get table when customer booking
+        else {
+            tableWaitId = await getTableWait();
+        }
 
         await Booking.create({
             customer_name: customerName,
@@ -106,7 +126,7 @@ export const create = async (
             booking_time: time,
             party_size: partySize,
             booking_status: bookingStatus,
-            table_id: tableId ? tableId : newTableId,
+            table_id: tableId ? tableId : tableWaitId,
             note: note,
         });
 
@@ -127,7 +147,10 @@ export const create = async (
                 );
             });
 
-        res.send('created');
+        res.send({
+            message: 'Create booking success',
+            action: 'add',
+        });
     } catch (err) {
         console.log(err);
     }
@@ -151,31 +174,57 @@ export const updateBooking = async (
             tableId,
         }: Booking = req.body;
 
-        if (bookingStatus === 'done' || bookingStatus === 'cancel') {
-            if (tableId) {
-                updateStatusTable(tableId);
-            }
-        }
-
-        await Booking.update(
-            {
-                customer_name: customerName,
-                customer_email: email,
-                customer_phone: phone,
-                booking_date: moment(date),
-                booking_time: time,
-                party_size: partySize,
-                booking_status: bookingStatus,
-                table_id: tableId,
-                note: note,
-            },
-            {
-                where: {
-                    id: id,
+        const checkIsDisable = await Booking.findOne({
+            where: {
+                id: id,
+                booking_status: {
+                    [Op.notIn]: ['cancel', 'done'],
                 },
+            },
+        });
+
+        if (checkIsDisable) {
+            const tableWaitId = await getTableWait();
+            //Return status => available
+            if (bookingStatus !== 'pending' && tableId !== tableWaitId) {
+                if (tableId) {
+                    updateStatusTable(tableId);
+                }
+
+                await Booking.update(
+                    {
+                        customer_name: customerName,
+                        customer_email: email,
+                        customer_phone: phone,
+                        booking_date: moment(date),
+                        booking_time: time,
+                        party_size: partySize,
+                        booking_status: bookingStatus,
+                        table_id: tableId,
+                        note: note,
+                    },
+                    {
+                        where: {
+                            id: id,
+                        },
+                    }
+                );
+                res.send({
+                    message: 'Update booking success',
+                    action: 'update',
+                });
+            } else {
+                res.send({
+                    message: 'Cannot change status table when table is waiting',
+                    action: 'warning',
+                });
             }
-        );
-        res.send('updated');
+        } else {
+            res.send({
+                message: 'This booking is disable',
+                action: 'warning',
+            });
+        }
     } catch (err) {
         console.log(err);
     }
@@ -212,11 +261,6 @@ export const getAll = async (
     }
 };
 
-interface QueryVerify {
-    email: string;
-    token: string;
-}
-
 export const verifyBooking = (
     req: Request<{}, {}, {}, QueryVerify>,
     res: Response
@@ -245,7 +289,7 @@ const removeOldBookingRecords = () => {
     const oneWeekAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
     Booking.destroy({
         where: {
-            createdAt: { [Op.lte]: oneWeekAgo },
+            create_at: { [Op.lte]: oneWeekAgo },
         },
     });
 };

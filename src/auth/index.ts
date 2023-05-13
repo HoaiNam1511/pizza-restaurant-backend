@@ -5,9 +5,7 @@ import { Request, Response } from 'express';
 import Token from '../model/token';
 import bcrypt from 'bcrypt';
 import { FormEmailForgotPassword } from '../custom/formEmailResetPassword';
-
-//const secretKey = '15112001';
-//const refreshTokenKey = '15112001';
+const { Op } = require('sequelize');
 
 interface AccountLogin {
     username: string;
@@ -117,8 +115,11 @@ export const login = async (
         console.log(err);
     }
 };
-
-export const refreshToken = (req: Request<{}, {}, {}, {}>, res: Response) => {
+console.log(refreshTokenArr);
+export const refreshToken = async (
+    req: Request<{}, {}, {}, {}>,
+    res: Response
+) => {
     // Get refresh token from cookies
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.send('You are not authenticated');
@@ -133,19 +134,23 @@ export const refreshToken = (req: Request<{}, {}, {}, {}>, res: Response) => {
             if (err) {
                 console.log(err);
             }
-            refreshTokenArr = refreshTokenArr.filter(
-                (token) => token !== refreshToken
-            );
+            // refreshTokenArr = refreshTokenArr.filter(
+            //     (token) => token !== refreshToken
+            // );
+
             const newAccessToken = generateAccessToken(user);
-            const newRefreshToken = generateRefreshToken(user);
-            refreshTokenArr.push(newRefreshToken);
-            res.cookie('refreshToken', newRefreshToken, {
-                httpOnly: true,
-                //When deploy change: true
-                secure: false,
-                path: '/',
-                sameSite: 'strict',
-            });
+            // const newRefreshToken = generateRefreshToken(user);
+
+            // console.log('New refresh token after refresh');
+            // console.log(newRefreshToken);
+            // // refreshTokenArr.push(newRefreshToken);
+            // res.cookie('refreshToken', newRefreshToken, {
+            //     httpOnly: true,
+            //     //When deploy change: true
+            //     secure: false,
+            //     path: '/',
+            //     sameSite: 'strict',
+            // });
             res.send({
                 token: newAccessToken,
             });
@@ -217,15 +222,13 @@ export const resetPass = async (
                 sendMail(
                     email,
                     'Reset password',
-                    FormEmailForgotPassword({
-                        name: username,
-                        href: link,
-                    })
+                    FormEmailForgotPassword({ name: username, href: link })
                 );
 
                 res.send({
                     status: true,
-                    message: 'Please check your email',
+                    message:
+                        'We received a request to your email, please confirm for change password.',
                     token: hashEmail,
                 });
             });
@@ -240,12 +243,27 @@ export const confirmReset = async (
 ) => {
     const { token }: QueryVerify = req.query;
     try {
+        const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
+        //Get account info
         const result = await Token.findOne({
             where: {
-                token: token,
+                [Op.and]: {
+                    token: token,
+                    created_at: { [Op.gte]: threeMinutesAgo },
+                },
             },
         });
+
+        //Token is correct
         if (result) {
+            //Delete token token => disable token
+            await Token.destroy({
+                where: {
+                    token: token,
+                },
+            });
+
+            //Update password
             await Account.update(
                 {
                     password: result.password,

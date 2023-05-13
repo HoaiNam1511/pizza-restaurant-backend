@@ -1,5 +1,6 @@
 import { Role, Account_role, Account } from '../model/account';
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 
 interface Body {
     email: string;
@@ -65,7 +66,9 @@ export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
     try {
         checkAccountAlready = await Account.findOne({
             attributes: ['username'],
-            where: { username: username },
+            where: {
+                [Op.and]: { username: username, email: email },
+            },
         });
 
         //user already

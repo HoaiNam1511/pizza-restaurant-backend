@@ -18,21 +18,21 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const sendMail = (to, subject, htmlContent) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT),
         secure: false,
         auth: {
-            user: 'dangkyyt4@gmail.com',
-            pass: 'nxjywpjwoynmpxer', // generated ethereal password
+            user: process.env.EMAIL_USERNAME,
+            pass: process.env.EMAIL_PASSWORD, // generated ethereal password
         },
     });
-    // send mail with defined transport object
-    const info = yield transporter.sendMail({
-        from: 'pizzarestaurant@gmail.com',
+    const info = {
+        from: process.env.EMAIL_FROM_ADDRESS,
         to: to,
         subject: subject,
         html: htmlContent,
-    });
-    return transporter.sendMail(info);
+    };
+    // send mail with defined transport object
+    return yield transporter.sendMail(info);
 });
 exports.sendMail = sendMail;

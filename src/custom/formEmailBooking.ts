@@ -1,3 +1,4 @@
+import moment from 'moment';
 interface FormEmail {
     customerName: string;
     time: Date;
@@ -70,7 +71,7 @@ export const formEmail = ({
                         style="min-width: 120px; display: inline-block"
                         >Date</strong
                     >
-                    ${date}
+                    ${moment(date, 'YYYY-MM-DD').format('DD/MM/YYYY')}
                 </p>
                 <p style="margin: 8px 0px; font-size: 14px">
                     <strong

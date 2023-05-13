@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteAccount = exports.update = exports.create = exports.get = void 0;
 const account_1 = require("../model/account");
+const sequelize_1 = require("sequelize");
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
     const offSet = (page - 1) * limit;
@@ -47,7 +48,9 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         checkAccountAlready = yield account_1.Account.findOne({
             attributes: ['username'],
-            where: { username: username },
+            where: {
+                [sequelize_1.Op.and]: { username: username, email: email },
+            },
         });
         //user already
         if (checkAccountAlready) {

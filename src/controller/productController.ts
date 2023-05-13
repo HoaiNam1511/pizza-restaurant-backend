@@ -161,7 +161,7 @@ export const create = async (req: Request, res: Response) => {
         try {
             await CategoryProduct.bulkCreate(categoryProductId);
             res.send({
-                message: 'Add category success',
+                message: 'Add product success',
                 action: 'add',
             });
         } catch (err) {
@@ -212,7 +212,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         try {
             await CategoryProduct.bulkCreate(categoryProductId);
             res.send({
-                message: 'Update category success',
+                message: 'Update product success',
                 action: 'update',
             });
         } catch (err) {
@@ -237,7 +237,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
         });
 
         res.send({
-            message: 'Delete category success',
+            message: 'Delete product success',
             action: 'delete',
         });
     } catch (err) {

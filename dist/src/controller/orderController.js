@@ -84,7 +84,10 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             size: product.size,
         }));
         yield order_1.OrderDetail.bulkCreate(orderDetails);
-        res.send('Created order');
+        res.send({
+            message: 'Create order success',
+            action: 'add',
+        });
     }
     catch (err) {
         console.log(err);
@@ -124,7 +127,10 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             });
         }
-        res.send('success');
+        res.send({
+            message: 'Update order success',
+            action: 'update',
+        });
     }
     catch (err) {
         console.log(err);

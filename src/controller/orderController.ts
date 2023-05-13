@@ -132,7 +132,10 @@ export const create = async (
         }));
 
         await OrderDetail.bulkCreate(orderDetails);
-        res.send('Created order');
+        res.send({
+            message: 'Create order success',
+            action: 'add',
+        });
     } catch (err) {
         console.log(err);
     }
@@ -183,7 +186,10 @@ export const update = async (
                 }
             );
         }
-        res.send('success');
+        res.send({
+            message: 'Update order success',
+            action: 'update',
+        });
     } catch (err) {
         console.log(err);
     }

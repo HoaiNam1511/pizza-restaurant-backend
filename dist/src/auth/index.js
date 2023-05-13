@@ -19,6 +19,7 @@ const account_1 = require("../model/account");
 const token_1 = __importDefault(require("../model/token"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const formEmailResetPassword_1 = require("../custom/formEmailResetPassword");
+const { Op } = require('sequelize');
 let refreshTokenArr = [];
 const generateAccessToken = (account) => {
     return jsonwebtoken_1.default.sign({
@@ -92,7 +93,8 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-const refreshToken = (req, res) => {
+console.log(refreshTokenArr);
+const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Get refresh token from cookies
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken)
@@ -105,22 +107,26 @@ const refreshToken = (req, res) => {
         if (err) {
             console.log(err);
         }
-        refreshTokenArr = refreshTokenArr.filter((token) => token !== refreshToken);
+        // refreshTokenArr = refreshTokenArr.filter(
+        //     (token) => token !== refreshToken
+        // );
         const newAccessToken = generateAccessToken(user);
-        const newRefreshToken = generateRefreshToken(user);
-        refreshTokenArr.push(newRefreshToken);
-        res.cookie('refreshToken', newRefreshToken, {
-            httpOnly: true,
-            //When deploy change: true
-            secure: false,
-            path: '/',
-            sameSite: 'strict',
-        });
+        // const newRefreshToken = generateRefreshToken(user);
+        // console.log('New refresh token after refresh');
+        // console.log(newRefreshToken);
+        // // refreshTokenArr.push(newRefreshToken);
+        // res.cookie('refreshToken', newRefreshToken, {
+        //     httpOnly: true,
+        //     //When deploy change: true
+        //     secure: false,
+        //     path: '/',
+        //     sameSite: 'strict',
+        // });
         res.send({
             token: newAccessToken,
         });
     });
-};
+});
 exports.refreshToken = refreshToken;
 const logout = (req, res) => {
     res.clearCookie('refreshToken');
@@ -175,13 +181,10 @@ const resetPass = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 token: hashEmail,
             });
             const link = `${process.env.APP_URL}/auth/confirm?token=${hashEmail}`;
-            (0, mail_1.sendMail)(email, 'Reset password', (0, formEmailResetPassword_1.FormEmailForgotPassword)({
-                name: username,
-                href: link,
-            }));
+            (0, mail_1.sendMail)(email, 'Reset password', (0, formEmailResetPassword_1.FormEmailForgotPassword)({ name: username, href: link }));
             res.send({
                 status: true,
-                message: 'Please check your email',
+                message: 'We received a request to your email, please confirm for change password.',
                 token: hashEmail,
             });
         }));
@@ -194,12 +197,25 @@ exports.resetPass = resetPass;
 const confirmReset = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { token } = req.query;
     try {
+        const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
+        //Get account info
         const result = yield token_1.default.findOne({
             where: {
-                token: token,
+                [Op.and]: {
+                    token: token,
+                    created_at: { [Op.gte]: threeMinutesAgo },
+                },
             },
         });
+        //Token is correct
         if (result) {
+            //Delete token token => disable token
+            yield token_1.default.destroy({
+                where: {
+                    token: token,
+                },
+            });
+            //Update password
             yield account_1.Account.update({
                 password: result.password,
             }, {

@@ -5,6 +5,7 @@ require('dotenv').config();
 
 export const verifyToken = (req: any, res: Response, next: any) => {
     const token: string = req.headers.token;
+
     if (token) {
         jwt.verify(
             token,

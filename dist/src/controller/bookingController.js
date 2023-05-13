@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyBooking = exports.getAll = exports.updateBooking = exports.create = exports.updateStatusTable = exports.getNewTable = void 0;
+exports.verifyBooking = exports.getAll = exports.updateBooking = exports.create = exports.updateStatusTable = exports.getTableWait = exports.getNewTable = void 0;
 const moment_1 = __importDefault(require("moment"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const { Op } = require('sequelize');
@@ -27,8 +27,10 @@ const getNewTable = (tableSize) => __awaiter(void 0, void 0, void 0, function* (
         newTableId = yield table_1.default.findOne({
             attributes: ['id'],
             where: {
-                table_used: false,
-                table_size: { [Op.gte]: tableSize },
+                [Op.and]: {
+                    table_used: false,
+                    table_size: { [Op.gte]: tableSize },
+                },
             },
         });
         (0, exports.updateStatusTable)(newTableId.id);
@@ -39,6 +41,21 @@ const getNewTable = (tableSize) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getNewTable = getNewTable;
+const getTableWait = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tableWaitId = yield table_1.default.findOne({
+            attributes: ['id'],
+            where: {
+                table_size: 0,
+            },
+        });
+        return tableWaitId.id;
+    }
+    catch (err) {
+        console.log(err);
+    }
+});
+exports.getTableWait = getTableWait;
 const updateStatusTable = (tableId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         //Get table update status
@@ -65,17 +82,16 @@ exports.updateStatusTable = updateStatusTable;
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let newTableId;
+        let tableWaitId;
         const { customerName, email, phone, time, date, partySize, bookingStatus = 'pending', note = '', tableId = null, } = req.body;
-        if (!tableId) {
-            newTableId = yield (0, exports.getNewTable)(partySize);
-            if (newTableId) {
-                (0, exports.updateStatusTable)(newTableId);
-            }
-        }
-        else {
+        //If table id define => create by admin
+        if (tableId) {
             (0, exports.updateStatusTable)(tableId);
         }
-        //const booking = new Booking();
+        //Auto get table when customer booking
+        else {
+            tableWaitId = yield (0, exports.getTableWait)();
+        }
         yield booking_1.default.create({
             customer_name: customerName,
             customer_email: email,
@@ -84,7 +100,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             booking_time: time,
             party_size: partySize,
             booking_status: bookingStatus,
-            table_id: tableId ? tableId : newTableId,
+            table_id: tableId ? tableId : tableWaitId,
             note: note,
         });
         bcrypt_1.default
@@ -99,7 +115,10 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 href: link,
             }));
         });
-        res.send('created');
+        res.send({
+            message: 'Create booking success',
+            action: 'add',
+        });
     }
     catch (err) {
         console.log(err);
@@ -110,27 +129,54 @@ const updateBooking = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const { id } = req.params;
         const { customerName, email, phone, time, date, partySize, bookingStatus, note, tableId, } = req.body;
-        if (bookingStatus === 'done' || bookingStatus === 'cancel') {
-            if (tableId) {
-                (0, exports.updateStatusTable)(tableId);
-            }
-        }
-        yield booking_1.default.update({
-            customer_name: customerName,
-            customer_email: email,
-            customer_phone: phone,
-            booking_date: (0, moment_1.default)(date),
-            booking_time: time,
-            party_size: partySize,
-            booking_status: bookingStatus,
-            table_id: tableId,
-            note: note,
-        }, {
+        const checkIsDisable = yield booking_1.default.findOne({
             where: {
                 id: id,
+                booking_status: {
+                    [Op.notIn]: ['cancel', 'done'],
+                },
             },
         });
-        res.send('updated');
+        if (checkIsDisable) {
+            const tableWaitId = yield (0, exports.getTableWait)();
+            //Return status => available
+            if (bookingStatus !== 'pending' && tableId !== tableWaitId) {
+                if (tableId) {
+                    (0, exports.updateStatusTable)(tableId);
+                }
+                yield booking_1.default.update({
+                    customer_name: customerName,
+                    customer_email: email,
+                    customer_phone: phone,
+                    booking_date: (0, moment_1.default)(date),
+                    booking_time: time,
+                    party_size: partySize,
+                    booking_status: bookingStatus,
+                    table_id: tableId,
+                    note: note,
+                }, {
+                    where: {
+                        id: id,
+                    },
+                });
+                res.send({
+                    message: 'Update booking success',
+                    action: 'update',
+                });
+            }
+            else {
+                res.send({
+                    message: 'Cannot change status table when table is waiting',
+                    action: 'warning',
+                });
+            }
+        }
+        else {
+            res.send({
+                message: 'This booking is disable',
+                action: 'warning',
+            });
+        }
     }
     catch (err) {
         console.log(err);
@@ -182,7 +228,7 @@ const removeOldBookingRecords = () => {
     const oneWeekAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
     booking_1.default.destroy({
         where: {
-            createdAt: { [Op.lte]: oneWeekAgo },
+            create_at: { [Op.lte]: oneWeekAgo },
         },
     });
 };
