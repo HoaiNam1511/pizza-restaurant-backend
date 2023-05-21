@@ -29,6 +29,7 @@ const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
 router.post('/create', orderController.create);
 router.put('/update/:id', middleware.verifyToken, orderController.update);
+router.get('/order-week', middleware.verifyToken, orderController.orderOfWeek);
 router.get('/get', middleware.verifyToken, orderController.get);
 router.get('/', middleware.verifyToken, orderController.get);
 exports.default = router;

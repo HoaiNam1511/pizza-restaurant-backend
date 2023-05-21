@@ -9,8 +9,13 @@ router.put(
     middleware.verifyToken,
     bookingController.updateBooking
 );
-router.get('/get', middleware.verifyToken, bookingController.getAll);
+router.get(
+    '/booking-week',
+    middleware.verifyToken,
+    bookingController.bookingOfWeek
+);
 router.get('/verify', bookingController.verifyBooking);
+router.get('/get', middleware.verifyToken, bookingController.getAll);
 router.get('/', middleware.verifyToken, bookingController.getAll);
 
 export default router;

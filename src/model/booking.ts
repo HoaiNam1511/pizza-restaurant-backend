@@ -45,6 +45,9 @@ const Booking = db.define('bookings', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    created_at: {
+        type: DataTypes.DATEONLY,
+    },
 });
 
 Table.hasOne(Booking, {

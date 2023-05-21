@@ -1,6 +1,7 @@
 import path from 'path';
 import multer from 'multer';
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 
 import Product from '../model/product';
 import Category from '../model/category';
@@ -32,6 +33,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single('image');
 
+//Get all product
 export const getAll = async (
     req: Request<{}, {}, {}, Query>,
     res: Response
@@ -50,7 +52,7 @@ export const getAll = async (
             include: [
                 {
                     model: Category,
-                    as: 'category',
+                    as: 'categories',
                 },
             ],
             offset: page ? offSet : 0,
@@ -61,6 +63,7 @@ export const getAll = async (
         if (page) {
             const allProduct = await Product.count();
             const totalPage = Math.ceil(allProduct / limit);
+
             res.send({
                 totalPage: totalPage,
                 data: result.rows,
@@ -75,6 +78,37 @@ export const getAll = async (
     }
 };
 
+//Search product
+export const search = async (
+    req: Request<{}, {}, {}, Query>,
+    res: Response
+): Promise<void> => {
+    try {
+        const { name }: Query = req.query;
+        const result = await Product.findAll({
+            where: {
+                name: {
+                    [Op.like]: `%${name}%`,
+                },
+            },
+            include: [
+                {
+                    model: Category,
+                    as: 'categories',
+                },
+            ],
+            limit: 10,
+        });
+
+        res.send({
+            data: result,
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+//Filter product
 export const filterProduct = async (
     req: Request<{}, {}, {}, Filter>,
     res: Response
@@ -85,7 +119,7 @@ export const filterProduct = async (
             include: [
                 {
                     model: Category,
-                    as: 'category',
+                    as: 'categories',
                     where: {
                         id: category,
                     },
@@ -100,6 +134,7 @@ export const filterProduct = async (
     }
 };
 
+//Get one product
 export const getOne = async (
     req: Request<Params, {}, {}, {}>,
     res: Response
@@ -110,7 +145,7 @@ export const getOne = async (
             include: [
                 {
                     model: Category,
-                    as: 'category',
+                    as: 'categories',
                 },
             ],
             where: {
@@ -123,6 +158,7 @@ export const getOne = async (
     }
 };
 
+//Create product
 export const create = async (req: Request, res: Response) => {
     upload(req, res, async function () {
         let newProductId: { id: number };
@@ -136,7 +172,7 @@ export const create = async (req: Request, res: Response) => {
                 price: price,
                 material: material,
                 description: description,
-                image: req.file?.filename,
+                image: req.file?.filename || '',
             });
         } catch (err) {
             console.log(err);
@@ -160,6 +196,7 @@ export const create = async (req: Request, res: Response) => {
 
         try {
             await CategoryProduct.bulkCreate(categoryProductId);
+
             res.send({
                 message: 'Add product success',
                 action: 'add',
@@ -170,6 +207,7 @@ export const create = async (req: Request, res: Response) => {
     });
 };
 
+//Update product
 export const updateProduct = async (req: Request, res: Response) => {
     upload(req, res, async function () {
         const { id } = req.params;
@@ -221,6 +259,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     });
 };
 
+//Delete product
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

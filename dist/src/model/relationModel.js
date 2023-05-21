@@ -24,6 +24,6 @@ category_1.default.belongsToMany(product_1.default, {
 });
 product_1.default.belongsToMany(category_1.default, {
     through: 'category_products',
-    as: 'category',
+    as: 'categories',
     foreignKey: 'productId',
 });

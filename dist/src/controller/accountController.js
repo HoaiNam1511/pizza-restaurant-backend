@@ -10,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteAccount = exports.update = exports.create = exports.get = void 0;
-const account_1 = require("../model/account");
 const sequelize_1 = require("sequelize");
+const account_1 = require("../model/account");
+//Get account
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
     const offSet = (page - 1) * limit;
@@ -42,6 +43,7 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.get = get;
+//Create account
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password, status, role } = req.body;
     let newUser, checkAccountAlready;
@@ -88,42 +90,69 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.create = create;
+//Update account
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { email, username, password, status, role } = req.body;
+    const { actionaccount } = req.headers;
+    const { username: currentUsername } = req.user;
     try {
-        yield account_1.Account.update({
-            email: email,
-            user_name: username,
-            password: password,
-            status: status,
-        }, {
-            where: {
-                id: id,
-            },
-        });
-        yield account_1.Account_role.update({
-            roleId: role,
-        }, {
-            where: {
-                accountId: id,
-            },
-        });
-        res.send({
-            message: 'Update user success',
-            action: 'update',
-        });
+        if (actionaccount !== process.env.ACCOUNT_AUTH) {
+            yield account_1.Account.update({
+                email: email,
+                user_name: username,
+                password: password,
+                status: status,
+            }, {
+                where: {
+                    id: id,
+                },
+            });
+            yield account_1.Account_role.update({
+                roleId: role,
+            }, {
+                where: {
+                    accountId: id,
+                },
+            });
+            res.send({
+                message: 'Update user success',
+                action: 'update',
+            });
+        }
+        else {
+            if (currentUsername === process.env.ACCOUNT_AUTH) {
+                yield account_1.Account.update({
+                    password: password,
+                }, {
+                    where: {
+                        id: id,
+                    },
+                });
+                res.send({
+                    message: 'Update success',
+                    action: 'update',
+                });
+            }
+            else {
+                res.send({
+                    message: 'You are not auth',
+                    action: 'warning',
+                });
+            }
+        }
     }
     catch (error) {
         console.log(error);
     }
 });
 exports.update = update;
+//Delete account
 const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { name } = req.headers;
+    const { actionaccount } = req.headers;
     try {
-        if (name === 'admin') {
+        if (actionaccount === process.env.ACCOUNT_AUTH) {
             res.send({
                 message: 'You cannot delete this user',
                 action: 'warning',
@@ -139,6 +168,10 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 where: {
                     accountId: id,
                 },
+            });
+            res.send({
+                message: 'Delete user success',
+                action: 'delete',
             });
             res.send({
                 message: 'Delete user success',

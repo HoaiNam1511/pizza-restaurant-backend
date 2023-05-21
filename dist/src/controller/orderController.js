@@ -12,15 +12,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update = exports.create = exports.get = void 0;
+exports.totalOrder = exports.orderOfWeek = exports.update = exports.create = exports.get = void 0;
 const moment_1 = __importDefault(require("moment"));
+const sequelize_1 = require("sequelize");
 const product_1 = __importDefault(require("../model/product"));
 const controller_1 = require("../controller/");
 const order_1 = require("../model/order");
+//Get order
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
+        const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, orderStatus, paymentStatus, } = req.query;
         const offSet = (page - 1) * limit;
+        const whereClause = {};
+        if (paymentStatus) {
+            whereClause.payment_status = paymentStatus;
+        }
+        if (orderStatus) {
+            whereClause.order_status = orderStatus;
+        }
         const result = yield order_1.Order.findAndCountAll({
             include: [
                 {
@@ -31,6 +40,9 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     as: 'products',
                 },
             ],
+            where: {
+                [sequelize_1.Op.and]: [whereClause],
+            },
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
@@ -46,12 +58,14 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.get = get;
+//Function create code of order
 const createCode = ({ paymentMethod, newIdCustomer }) => {
     const dateNow = new Date();
     let code = `${paymentMethod.slice(0, 3)}${dateNow.getSeconds()}${dateNow.getDate()}${dateNow.getMonth() + 1}${dateNow.getFullYear()}`;
     code += `ifc${newIdCustomer}`;
     return code;
 };
+//Create order
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, address, email, phone, paymentMethod, products, } = req.body;
@@ -94,6 +108,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.create = create;
+//Update order
 const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -137,3 +152,46 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.update = update;
+//Get order off week
+const orderOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { startOfWeek, endOfWeek } = (0, controller_1.getWeek)();
+    const result = yield (0, exports.totalOrder)({
+        startPoint: startOfWeek,
+        endPoint: endOfWeek,
+    });
+    res.send(result);
+});
+exports.orderOfWeek = orderOfWeek;
+const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield order_1.Order.findAll({
+        attributes: ['id', 'order_date'],
+        include: [
+            {
+                model: product_1.default,
+                as: 'products',
+                attributes: ['price'],
+                through: { attributes: ['quantity'] },
+            },
+        ],
+        where: {
+            order_date: {
+                [sequelize_1.Op.gt]: startPoint,
+            },
+        },
+        order: [['order_date', 'DESC']],
+    });
+    const modifiedData = result.map((item) => {
+        const { id, order_date, products } = item;
+        const modifiedProducts = products.map((product) => {
+            const { price, order_details } = product;
+            return { price, quantity: order_details.quantity };
+        });
+        return {
+            id,
+            date: (0, moment_1.default)(order_date, 'YYYY.MM.DD').format('DD-MM-YYYY'),
+            products: modifiedProducts,
+        };
+    });
+    return modifiedData;
+});
+exports.totalOrder = totalOrder;

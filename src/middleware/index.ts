@@ -5,7 +5,6 @@ require('dotenv').config();
 
 export const verifyToken = (req: any, res: Response, next: any) => {
     const token: string = req.headers.token;
-
     if (token) {
         jwt.verify(
             token,
@@ -24,7 +23,7 @@ export const verifyToken = (req: any, res: Response, next: any) => {
     }
 };
 
-export const checkAdminAuth = (req: any, res: Response, next: NextFunction) => {
+export const checkAdminRole = (req: any, res: Response, next: NextFunction) => {
     if (req.user.role < 2) {
         next();
     } else {

@@ -3,14 +3,7 @@ import multer from 'multer';
 import { Request, Response } from 'express';
 
 import Category from '../model/category';
-
-interface QueryParams {
-    page: number;
-    sortBy: string;
-    orderBy: string;
-    limit?: number;
-}
-
+import { Query } from './index';
 export interface Category<T> {
     id?: number;
     name: string;
@@ -28,8 +21,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single('image');
 
+//Get all category
 export const getAllCategory = async (
-    req: Request<{}, {}, {}, QueryParams>,
+    req: Request<{}, {}, {}, Query>,
     res: Response
 ) => {
     try {
@@ -38,7 +32,7 @@ export const getAllCategory = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
-        }: QueryParams = req.query;
+        }: Query = req.query;
         const offSet = (page - 1) * limit;
 
         const result = await Category.findAndCountAll({
@@ -64,6 +58,7 @@ export const getAllCategory = async (
     }
 };
 
+//Create new category
 export const create = async (req: Request, res: Response) => {
     upload(req, res, async function () {
         let { name, image }: Category<File> = req.body;
@@ -71,7 +66,7 @@ export const create = async (req: Request, res: Response) => {
         try {
             await Category.create({
                 name: name,
-                image: req.file?.filename,
+                image: req.file?.filename || '',
             });
 
             res.send({
@@ -84,7 +79,8 @@ export const create = async (req: Request, res: Response) => {
     });
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+//Update category
+export const updateCategory = async (req: Request, res: Response) => {
     upload(req, res, async function () {
         const { id } = req.params;
         let { name, image }: Category<File | string> = req.body;
@@ -100,6 +96,7 @@ export const updateProduct = async (req: Request, res: Response) => {
                     },
                 }
             );
+
             res.send({
                 message: 'Update category success',
                 action: 'update',
@@ -110,6 +107,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     });
 };
 
+//Delete category
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

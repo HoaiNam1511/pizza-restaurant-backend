@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getNewId = void 0;
+exports.getWeek = exports.getNewId = void 0;
 const getNewId = ({ TableName, }) => __awaiter(void 0, void 0, void 0, function* () {
     const newId = yield TableName.findOne({
         attributes: ['id'],
@@ -18,3 +18,15 @@ const getNewId = ({ TableName, }) => __awaiter(void 0, void 0, void 0, function*
     return newId.id;
 });
 exports.getNewId = getNewId;
+const getWeek = () => {
+    const today = new Date();
+    let startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+    startOfWeek = startOfWeek.toISOString().split('T')[0];
+    let endOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    endOfWeek = endOfWeek.toISOString().split('T')[0];
+    return {
+        startOfWeek,
+        endOfWeek,
+    };
+};
+exports.getWeek = getWeek;

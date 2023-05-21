@@ -21,6 +21,6 @@ Category.belongsToMany(Product, {
 
 Product.belongsToMany(Category, {
     through: 'category_products',
-    as: 'category',
+    as: 'categories',
     foreignKey: 'productId',
 });

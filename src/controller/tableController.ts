@@ -5,6 +5,7 @@ interface TableQuery {
     used: string;
 }
 
+//Get all table
 export const getAll = async (
     req: Request<{}, {}, {}, TableQuery>,
     res: Response
@@ -26,6 +27,7 @@ export const getAll = async (
             };
         }
         const result = await Table.findAll(condition);
+
         res.send(result);
     } catch (err) {
         console.log(err);

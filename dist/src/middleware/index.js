@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkLogin = exports.checkAdminAuth = exports.verifyToken = void 0;
+exports.checkLogin = exports.checkAdminRole = exports.verifyToken = void 0;
 const account_1 = require("./../model/account");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require('dotenv').config();
@@ -34,7 +34,7 @@ const verifyToken = (req, res, next) => {
     }
 };
 exports.verifyToken = verifyToken;
-const checkAdminAuth = (req, res, next) => {
+const checkAdminRole = (req, res, next) => {
     if (req.user.role < 2) {
         next();
     }
@@ -45,7 +45,7 @@ const checkAdminAuth = (req, res, next) => {
         });
     }
 };
-exports.checkAdminAuth = checkAdminAuth;
+exports.checkAdminRole = checkAdminRole;
 const checkLogin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.token;

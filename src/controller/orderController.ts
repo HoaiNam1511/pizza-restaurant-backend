@@ -1,9 +1,10 @@
 import moment from 'moment';
+import { Op } from 'sequelize';
 import { Request, Response } from 'express';
 
 import Product from '../model/product';
 import { Query } from './index';
-import { getNewId } from '../controller/';
+import { getNewId, getWeek, Week } from '../controller/';
 import { Order, Customer, OrderDetail } from '../model/order';
 interface OrderProperty {
     name: string;
@@ -16,6 +17,13 @@ interface OrderProperty {
         quantity: number;
         size: string;
     }[];
+}
+
+interface TotalOrder {
+    orderQuantity: number;
+    subTotal: number;
+    orderSale: number;
+    chartData: any;
 }
 
 interface OrderUpdate {
@@ -33,6 +41,7 @@ interface CreateCode {
     newIdCustomer: number;
 }
 
+//Get order
 export const get = async (
     req: Request<{}, {}, {}, Query>,
     res: Response
@@ -43,8 +52,20 @@ export const get = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
+            orderStatus,
+            paymentStatus,
         }: Query = req.query;
         const offSet = (page - 1) * limit;
+
+        const whereClause: any = {};
+
+        if (paymentStatus) {
+            whereClause.payment_status = paymentStatus;
+        }
+
+        if (orderStatus) {
+            whereClause.order_status = orderStatus;
+        }
 
         const result = await Order.findAndCountAll({
             include: [
@@ -56,12 +77,16 @@ export const get = async (
                     as: 'products',
                 },
             ],
+            where: {
+                [Op.and]: [whereClause],
+            },
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
         });
 
         const totalPage = Math.ceil(result.count / limit);
+
         res.send({
             totalPage: totalPage,
             data: result.rows,
@@ -71,6 +96,7 @@ export const get = async (
     }
 };
 
+//Function create code of order
 const createCode = ({ paymentMethod, newIdCustomer }: CreateCode): string => {
     const dateNow = new Date();
     let code = `${paymentMethod.slice(
@@ -84,6 +110,7 @@ const createCode = ({ paymentMethod, newIdCustomer }: CreateCode): string => {
     return code;
 };
 
+//Create order
 export const create = async (
     req: Request<{}, {}, OrderProperty, {}>,
     res: Response
@@ -132,6 +159,7 @@ export const create = async (
         }));
 
         await OrderDetail.bulkCreate(orderDetails);
+
         res.send({
             message: 'Create order success',
             action: 'add',
@@ -141,6 +169,7 @@ export const create = async (
     }
 };
 
+//Update order
 export const update = async (
     req: Request<OrderUpdateParams, {}, OrderUpdate, {}>,
     res: Response
@@ -186,6 +215,7 @@ export const update = async (
                 }
             );
         }
+
         res.send({
             message: 'Update order success',
             action: 'update',
@@ -193,4 +223,60 @@ export const update = async (
     } catch (err) {
         console.log(err);
     }
+};
+
+//Get order off week
+export const orderOfWeek = async (
+    req: Request<{}, {}, {}, {}>,
+    res: Response
+) => {
+    const { startOfWeek, endOfWeek }: Week = getWeek();
+    const result = await totalOrder({
+        startPoint: startOfWeek,
+        endPoint: endOfWeek,
+    });
+
+    res.send(result);
+};
+
+export const totalOrder = async ({
+    startPoint,
+    endPoint,
+}: {
+    startPoint: string;
+    endPoint: string;
+}): Promise<TotalOrder> => {
+    const result = await Order.findAll({
+        attributes: ['id', 'order_date'],
+        include: [
+            {
+                model: Product,
+                as: 'products',
+                attributes: ['price'],
+                through: { attributes: ['quantity'] },
+            },
+        ],
+        where: {
+            order_date: {
+                [Op.gt]: startPoint,
+            },
+        },
+        order: [['order_date', 'DESC']],
+    });
+
+    const modifiedData = result.map((item: any) => {
+        const { id, order_date, products } = item;
+
+        const modifiedProducts = products.map((product: any) => {
+            const { price, order_details } = product;
+            return { price, quantity: order_details.quantity };
+        });
+
+        return {
+            id,
+            date: moment(order_date, 'YYYY.MM.DD').format('DD-MM-YYYY'),
+            products: modifiedProducts,
+        };
+    });
+    return modifiedData;
 };

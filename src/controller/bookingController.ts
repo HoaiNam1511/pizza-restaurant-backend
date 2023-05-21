@@ -1,6 +1,6 @@
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-const { Op } = require('sequelize');
+import { Op } from 'sequelize';
 import { Request, Response } from 'express';
 
 import Table from '../model/table';
@@ -8,6 +8,7 @@ import Booking from '../model/booking';
 import { Query } from './index';
 import { sendMail } from '../util/mail';
 import { formEmail } from '../custom/formEmailBooking';
+import { getWeek, Week } from './index';
 interface Booking {
     customerName: string;
     email: string;
@@ -27,8 +28,10 @@ interface BookingParam {
 interface QueryVerify {
     email: string;
     token: string;
+    id: number;
 }
 
+//Function get new table available
 export const getNewTable = async (
     tableSize: number
 ): Promise<number | undefined> => {
@@ -51,6 +54,7 @@ export const getNewTable = async (
     }
 };
 
+//Get table pending
 export const getTableWait = async () => {
     try {
         const tableWaitId = await Table.findOne({
@@ -65,6 +69,20 @@ export const getTableWait = async () => {
     }
 };
 
+//Function get new id of table
+const getNewId = async (TableType: any) => {
+    try {
+        const newId = await TableType.findOne({
+            attributes: ['id'],
+            order: [['id', 'DESC']],
+        });
+        return newId.id;
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+//Function update status of table
 export const updateStatusTable = async (tableId: number) => {
     try {
         //Get table update status
@@ -90,6 +108,7 @@ export const updateStatusTable = async (tableId: number) => {
     }
 };
 
+//Create booking
 export const create = async (
     req: Request<{}, {}, Booking, {}>,
     res: Response
@@ -130,10 +149,12 @@ export const create = async (
             note: note,
         });
 
+        const bookingNewId = await getNewId(Booking);
+
         bcrypt
             .hash(email, parseInt(process.env.BCRYPT_SALT as string))
             .then((hashEmail) => {
-                const link = `${process.env.APP_URL}/booking/verify?email=${email}&token=${hashEmail}`;
+                const link = `${process.env.APP_URL}/booking/verify?email=${email}&token=${hashEmail}&id=${bookingNewId}`;
                 sendMail(
                     email,
                     'Pizza Restaurant booking',
@@ -156,6 +177,7 @@ export const create = async (
     }
 };
 
+//Update booking
 export const updateBooking = async (
     req: Request<BookingParam, {}, Booking, {}>,
     res: Response
@@ -174,6 +196,7 @@ export const updateBooking = async (
             tableId,
         }: Booking = req.body;
 
+        //Check booking not is done or cancel
         const checkIsDisable = await Booking.findOne({
             where: {
                 id: id,
@@ -185,35 +208,51 @@ export const updateBooking = async (
 
         if (checkIsDisable) {
             const tableWaitId = await getTableWait();
-            //Return status => available
+            const query = {
+                customer_name: customerName,
+                customer_email: email,
+                customer_phone: phone,
+                booking_date: moment(date),
+                booking_time: time,
+                party_size: partySize,
+                booking_status: bookingStatus,
+                table_id: tableId,
+                note: note,
+            };
+            //If booking status is not equal [pending]
             if (bookingStatus !== 'pending' && tableId !== tableWaitId) {
                 if (tableId) {
                     updateStatusTable(tableId);
                 }
-
-                await Booking.update(
-                    {
-                        customer_name: customerName,
-                        customer_email: email,
-                        customer_phone: phone,
-                        booking_date: moment(date),
-                        booking_time: time,
-                        party_size: partySize,
-                        booking_status: bookingStatus,
-                        table_id: tableId,
-                        note: note,
+                await Booking.update(query, {
+                    where: {
+                        id: id,
                     },
-                    {
-                        where: {
-                            id: id,
-                        },
-                    }
-                );
+                });
+
                 res.send({
                     message: 'Update booking success',
                     action: 'update',
                 });
-            } else {
+            }
+            //If booking status is [done, cancel] and not have table id
+            else if (
+                ['done', 'cancel'].includes(bookingStatus) &&
+                tableId === tableWaitId
+            ) {
+                await Booking.update(query, {
+                    where: {
+                        id: id,
+                    },
+                });
+
+                res.send({
+                    message: 'Update booking success',
+                    action: 'update',
+                });
+            }
+            //If status is [eat]
+            else {
                 res.send({
                     message: 'Cannot change status table when table is waiting',
                     action: 'warning',
@@ -230,6 +269,7 @@ export const updateBooking = async (
     }
 };
 
+//Get all booking
 export const getAll = async (
     req: Request<{}, {}, {}, Query>,
     res: Response
@@ -240,13 +280,16 @@ export const getAll = async (
             sortBy = 'id',
             orderBy = 'DESC',
             limit = 7,
+            status = '',
         }: Query = req.query;
+
         const offSet = (page - 1) * limit;
         const response = await Booking.findAndCountAll({
             include: [{ model: Table }],
             offset: page ? offSet : 0,
             limit: limit ? +limit : null,
             order: [[sortBy, orderBy]],
+            where: status ? { booking_status: status } : {},
         });
 
         const rowCount = await Booking.count();
@@ -261,6 +304,7 @@ export const getAll = async (
     }
 };
 
+//Verify booking from user
 export const verifyBooking = (
     req: Request<{}, {}, {}, QueryVerify>,
     res: Response
@@ -273,7 +317,10 @@ export const verifyBooking = (
                 },
                 {
                     where: {
-                        customer_email: req.query.email,
+                        [Op.and]: [
+                            { customer_email: req.query.email },
+                            { id: req.query.id },
+                        ],
                     },
                 }
             );
@@ -284,9 +331,35 @@ export const verifyBooking = (
     });
 };
 
+//Get booking of week
+export const bookingOfWeek = async (
+    req: Request<{}, {}, {}, {}>,
+    res: Response
+) => {
+    const { startOfWeek, endOfWeek }: Week = getWeek();
+    const result = await Booking.findAll({
+        attributes: ['id', 'created_at'],
+        where: {
+            created_at: {
+                [Op.gt]: startOfWeek,
+            },
+        },
+        order: [['created_at', 'DESC']],
+    });
+
+    const bookingFilter = result.map((booking: any) => {
+        return {
+            id: booking.id,
+            date: moment(booking.created_at, 'YYYY.MM.DD').format('DD-MM-YYYY'),
+        };
+    });
+
+    res.send(bookingFilter);
+};
+
 //remove booking after 1 day
 const removeOldBookingRecords = () => {
-    const oneWeekAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
     Booking.destroy({
         where: {
             create_at: { [Op.lte]: oneWeekAgo },
@@ -294,4 +367,4 @@ const removeOldBookingRecords = () => {
     });
 };
 
-setInterval(removeOldBookingRecords, 1 * 24 * 60 * 60 * 1000);
+setInterval(removeOldBookingRecords, 10 * 24 * 60 * 60 * 1000);

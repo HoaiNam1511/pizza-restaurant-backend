@@ -13,24 +13,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.confirmReset = exports.resetPass = exports.forgotPassword = exports.getRole = exports.logout = exports.refreshToken = exports.login = void 0;
-const mail_1 = require("./../util/mail");
+const sequelize_1 = require("sequelize");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const account_1 = require("../model/account");
-const token_1 = __importDefault(require("../model/token"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const token_1 = __importDefault(require("../model/token"));
+const mail_1 = require("./../util/mail");
+const account_1 = require("../model/account");
 const formEmailResetPassword_1 = require("../custom/formEmailResetPassword");
-const { Op } = require('sequelize');
 let refreshTokenArr = [];
 const generateAccessToken = (account) => {
     return jsonwebtoken_1.default.sign({
         id: account.id,
         role: account.role,
+        username: account.username,
     }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '180s' });
 };
 const generateRefreshToken = (account) => {
     return jsonwebtoken_1.default.sign({
         id: account.id,
         role: account.role,
+        username: account.username,
     }, process.env.REFRESH_TOKEN_KEY, { expiresIn: '365d' });
 };
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -54,6 +56,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             const accountCookies = {
                 id: account.id,
                 role: account.role[0].id,
+                username: account.username,
             };
             //Account is active
             if (account.status === true) {
@@ -93,7 +96,6 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-console.log(refreshTokenArr);
 const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Get refresh token from cookies
     const refreshToken = req.cookies.refreshToken;
@@ -107,21 +109,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (err) {
             console.log(err);
         }
-        // refreshTokenArr = refreshTokenArr.filter(
-        //     (token) => token !== refreshToken
-        // );
         const newAccessToken = generateAccessToken(user);
-        // const newRefreshToken = generateRefreshToken(user);
-        // console.log('New refresh token after refresh');
-        // console.log(newRefreshToken);
-        // // refreshTokenArr.push(newRefreshToken);
-        // res.cookie('refreshToken', newRefreshToken, {
-        //     httpOnly: true,
-        //     //When deploy change: true
-        //     secure: false,
-        //     path: '/',
-        //     sameSite: 'strict',
-        // });
         res.send({
             token: newAccessToken,
         });
@@ -201,9 +189,9 @@ const confirmReset = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         //Get account info
         const result = yield token_1.default.findOne({
             where: {
-                [Op.and]: {
+                [sequelize_1.Op.and]: {
                     token: token,
-                    created_at: { [Op.gte]: threeMinutesAgo },
+                    created_at: { [sequelize_1.Op.gte]: threeMinutesAgo },
                 },
             },
         });

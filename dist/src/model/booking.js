@@ -49,6 +49,9 @@ const Booking = connect_1.db.define('bookings', {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
+    created_at: {
+        type: sequelize_1.DataTypes.DATEONLY,
+    },
 });
 table_1.default.hasOne(Booking, {
     foreignKey: 'table_id',

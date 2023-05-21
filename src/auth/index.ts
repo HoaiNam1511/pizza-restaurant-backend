@@ -1,11 +1,12 @@
-import { sendMail } from './../util/mail';
+import { Op } from 'sequelize';
 import jwt from 'jsonwebtoken';
-import { Account, Role } from '../model/account';
 import { Request, Response } from 'express';
-import Token from '../model/token';
 import bcrypt from 'bcrypt';
+
+import Token from '../model/token';
+import { sendMail } from './../util/mail';
+import { Account, Role } from '../model/account';
 import { FormEmailForgotPassword } from '../custom/formEmailResetPassword';
-const { Op } = require('sequelize');
 
 interface AccountLogin {
     username: string;
@@ -15,6 +16,7 @@ interface AccountLogin {
 interface InfoAccountToken {
     id: number;
     role: number;
+    username: string;
 }
 
 interface BodyForgotPass {
@@ -38,6 +40,7 @@ const generateAccessToken = (account: InfoAccountToken) => {
         {
             id: account.id,
             role: account.role,
+            username: account.username,
         },
         process.env.ACCESS_TOKEN_KEY as string,
         { expiresIn: '180s' }
@@ -49,6 +52,7 @@ const generateRefreshToken = (account: InfoAccountToken) => {
         {
             id: account.id,
             role: account.role,
+            username: account.username,
         },
         process.env.REFRESH_TOKEN_KEY as string,
         { expiresIn: '365d' }
@@ -80,6 +84,7 @@ export const login = async (
             const accountCookies: InfoAccountToken = {
                 id: account.id,
                 role: account.role[0].id,
+                username: account.username,
             };
             //Account is active
             if (account.status === true) {
@@ -115,7 +120,7 @@ export const login = async (
         console.log(err);
     }
 };
-console.log(refreshTokenArr);
+
 export const refreshToken = async (
     req: Request<{}, {}, {}, {}>,
     res: Response
@@ -134,23 +139,8 @@ export const refreshToken = async (
             if (err) {
                 console.log(err);
             }
-            // refreshTokenArr = refreshTokenArr.filter(
-            //     (token) => token !== refreshToken
-            // );
 
             const newAccessToken = generateAccessToken(user);
-            // const newRefreshToken = generateRefreshToken(user);
-
-            // console.log('New refresh token after refresh');
-            // console.log(newRefreshToken);
-            // // refreshTokenArr.push(newRefreshToken);
-            // res.cookie('refreshToken', newRefreshToken, {
-            //     httpOnly: true,
-            //     //When deploy change: true
-            //     secure: false,
-            //     path: '/',
-            //     sameSite: 'strict',
-            // });
             res.send({
                 token: newAccessToken,
             });

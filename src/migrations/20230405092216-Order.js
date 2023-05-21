@@ -19,7 +19,7 @@ module.exports = {
                 allowNull: false,
             },
             order_date: {
-                type: Sequelize.DATE,
+                type: Sequelize.DATEONLY,
                 allowNull: false,
             },
             order_status: {
@@ -34,8 +34,10 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            createAt: Sequelize.DATE,
-            updateAt: Sequelize.DATE,
+            created_at: {
+                type: Sequelize.DATEONLY,
+                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
         });
     },
 

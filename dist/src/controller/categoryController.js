@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCategory = exports.updateProduct = exports.create = exports.getAllCategory = void 0;
+exports.deleteCategory = exports.updateCategory = exports.create = exports.getAllCategory = void 0;
 const path_1 = __importDefault(require("path"));
 const multer_1 = __importDefault(require("multer"));
 const category_1 = __importDefault(require("../model/category"));
@@ -25,6 +25,7 @@ const storage = multer_1.default.diskStorage({
     },
 });
 const upload = (0, multer_1.default)({ storage: storage }).single('image');
+//Get all category
 const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
@@ -52,6 +53,7 @@ const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getAllCategory = getAllCategory;
+//Create new category
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     upload(req, res, function () {
         var _a;
@@ -60,7 +62,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 yield category_1.default.create({
                     name: name,
-                    image: (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename,
+                    image: ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename) || '',
                 });
                 res.send({
                     message: 'Add category success',
@@ -74,7 +76,8 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 exports.create = create;
-const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+//Update category
+const updateCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     upload(req, res, function () {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
@@ -100,7 +103,8 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     });
 });
-exports.updateProduct = updateProduct;
+exports.updateCategory = updateCategory;
+//Delete category
 const deleteCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;

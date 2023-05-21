@@ -1,5 +1,5 @@
-import * as categoryController from '../controller/categoryController';
 import { Router } from 'express';
+import * as categoryController from '../controller/categoryController';
 import * as middleware from '../middleware';
 
 const router = Router();
@@ -8,7 +8,7 @@ router.post('/create', middleware.verifyToken, categoryController.create);
 router.put(
     '/update/:id',
     middleware.verifyToken,
-    categoryController.updateProduct
+    categoryController.updateCategory
 );
 router.delete(
     '/delete/:id',

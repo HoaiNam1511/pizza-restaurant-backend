@@ -5,6 +5,7 @@ import * as middleware from '../middleware';
 const router = Router();
 router.post('/create', orderController.create);
 router.put('/update/:id', middleware.verifyToken, orderController.update);
+router.get('/order-week', middleware.verifyToken, orderController.orderOfWeek);
 router.get('/get', middleware.verifyToken, orderController.get);
 router.get('/', middleware.verifyToken, orderController.get);
 

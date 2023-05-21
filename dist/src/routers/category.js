@@ -23,12 +23,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const categoryController = __importStar(require("../controller/categoryController"));
 const express_1 = require("express");
+const categoryController = __importStar(require("../controller/categoryController"));
 const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
 router.post('/create', middleware.verifyToken, categoryController.create);
-router.put('/update/:id', middleware.verifyToken, categoryController.updateProduct);
+router.put('/update/:id', middleware.verifyToken, categoryController.updateCategory);
 router.delete('/delete/:id', middleware.verifyToken, categoryController.deleteCategory);
 router.get('/get', categoryController.getAllCategory);
 router.get('/', categoryController.getAllCategory);
