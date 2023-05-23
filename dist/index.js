@@ -42,7 +42,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000',
         'http://localhost:3001',
-        'https://pizza-restaurant-deploy.vercel.app',
+        process.env.APP_URL,
     ],
     credentials: true,
 }));
