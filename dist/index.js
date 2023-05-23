@@ -43,6 +43,7 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:3001',
         process.env.APP_URL,
+        'https://pizza-restaurant-beta.vercel.app',
     ],
     credentials: true,
 }));
