@@ -22,11 +22,20 @@ export const getAllCategory = async (
         }: Query = req.query;
         const offSet = (page - 1) * limit;
 
-        const result = await Category.findAndCountAll({
-            offset: page ? offSet : 0,
-            limit: limit ? +limit : null,
-            order: [[sortBy, orderBy]],
-        });
+        let queryOptions: any;
+        if (page) {
+            queryOptions = {
+                offset: page ? offSet : 0,
+                limit: limit ? +limit : null,
+                order: [[sortBy, orderBy]],
+            };
+        } else {
+            queryOptions = {
+                order: [[sortBy, orderBy]],
+            };
+        }
+
+        const result = await Category.findAndCountAll(queryOptions);
 
         const totalPage = Math.ceil(result.count / limit);
 

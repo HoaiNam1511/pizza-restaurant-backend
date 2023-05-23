@@ -20,11 +20,20 @@ const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
         const offSet = (page - 1) * limit;
-        const result = yield category_1.default.findAndCountAll({
-            offset: page ? offSet : 0,
-            limit: limit ? +limit : null,
-            order: [[sortBy, orderBy]],
-        });
+        let queryOptions;
+        if (page) {
+            queryOptions = {
+                offset: page ? offSet : 0,
+                limit: limit ? +limit : null,
+                order: [[sortBy, orderBy]],
+            };
+        }
+        else {
+            queryOptions = {
+                order: [[sortBy, orderBy]],
+            };
+        }
+        const result = yield category_1.default.findAndCountAll(queryOptions);
         const totalPage = Math.ceil(result.count / limit);
         if (page) {
             res.send({
