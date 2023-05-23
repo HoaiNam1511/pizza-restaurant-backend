@@ -23,9 +23,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const tableController = __importStar(require("../controller/tableController"));
+const bookingController = __importStar(require("../controller/bookingController"));
 const express_1 = require("express");
+const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
-router.get('/get', tableController.getAll);
-router.get('/', tableController.getAll);
+router.post('/create', bookingController.create);
+router.put('/update/:id', middleware.verifyToken, bookingController.updateBooking);
+router.get('/booking-week', middleware.verifyToken, bookingController.bookingOfWeek);
+router.get('/verify', bookingController.verifyBooking);
+router.get('/get', middleware.verifyToken, bookingController.getAll);
+router.get('/', middleware.verifyToken, bookingController.getAll);
 exports.default = router;

@@ -46,7 +46,7 @@ const Booking = db.define('bookings', {
         allowNull: false,
     },
     created_at: {
-        type: DataTypes.DATEONLY,
+        type: DataTypes.DATE,
     },
 });
 

@@ -246,7 +246,7 @@ const confirmReset = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     email: result.email,
                 },
             });
-            res.send('Change password success');
+            res.send('Change success');
         }
         else {
             res.send('Token is not valid');

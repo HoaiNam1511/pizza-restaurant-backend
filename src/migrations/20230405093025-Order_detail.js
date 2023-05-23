@@ -27,7 +27,7 @@ module.exports = {
                 allowNull: false,
             },
             created_at: {
-                type: Sequelize.DATEONLY,
+                type: Sequelize.DATE,
                 defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
             },
         });

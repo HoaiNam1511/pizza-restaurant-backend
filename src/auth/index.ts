@@ -19,6 +19,10 @@ interface InfoAccountToken {
     username: string;
 }
 
+interface Headers {
+    username: string;
+}
+
 interface BodyForgotPass {
     email: string;
 }
@@ -43,7 +47,7 @@ const generateAccessToken = (account: InfoAccountToken) => {
             username: account.username,
         },
         process.env.ACCESS_TOKEN_KEY as string,
-        { expiresIn: '180s' }
+        { expiresIn: '10s' }
     );
 };
 
@@ -57,6 +61,41 @@ const generateRefreshToken = (account: InfoAccountToken) => {
         process.env.REFRESH_TOKEN_KEY as string,
         { expiresIn: '365d' }
     );
+};
+
+const updateRefreshToken = async ({
+    username,
+    refreshToken,
+}: {
+    username: string;
+    refreshToken: string;
+}) => {
+    try {
+        await Account.update(
+            {
+                refresh_token: refreshToken,
+            },
+            {
+                where: {
+                    username: username,
+                },
+            }
+        );
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+const getRefreshToken = async ({ username }: { username: string }) => {
+    try {
+        const result = await Account.findOne({
+            attributes: ['refresh_token'],
+            where: { username: username },
+        });
+        return result.refresh_token;
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 export const login = async (
@@ -91,12 +130,18 @@ export const login = async (
                 accessToken = generateAccessToken(accountCookies);
                 refreshToken = generateRefreshToken(accountCookies);
                 refreshTokenArr.push(refreshToken);
-                res.cookie('refreshToken', refreshToken, {
-                    httpOnly: true,
-                    secure: false,
-                    path: '/',
-                    sameSite: 'strict',
+
+                await updateRefreshToken({
+                    username: account.username,
+                    refreshToken: refreshToken,
                 });
+
+                // res.cookie('refreshToken', refreshToken, {
+                //     httpOnly: true,
+                //     secure: true,
+                //     path: '/',
+                //     sameSite: 'strict',
+                // });
                 message = 'Login success';
                 action = 'success';
             } else {
@@ -121,12 +166,10 @@ export const login = async (
     }
 };
 
-export const refreshToken = async (
-    req: Request<{}, {}, {}, {}>,
-    res: Response
-) => {
+export const refreshToken = async (req: any, res: Response) => {
     // Get refresh token from cookies
-    const refreshToken = req.cookies.refreshToken;
+    const { username } = req.headers;
+    const refreshToken = await getRefreshToken({ username });
     if (!refreshToken) return res.send('You are not authenticated');
     //Check refresh token
     if (!refreshTokenArr.includes(refreshToken)) {
@@ -148,11 +191,13 @@ export const refreshToken = async (
     );
 };
 
-export const logout = (req: Request<{}, {}, {}, {}>, res: Response) => {
-    res.clearCookie('refreshToken');
-    refreshTokenArr = refreshTokenArr.filter(
-        (token) => token !== req.cookies.refreshToken
-    );
+export const logout = async (req: Request<{}, {}, {}, {}>, res: Response) => {
+    // res.clearCookie('refreshToken');
+    // refreshTokenArr = refreshTokenArr.filter(
+    //     (token) => token !== req.cookies.refreshToken
+    // );
+    // res.send('Logout success');
+    await getRefreshToken({ username: '' });
     res.send('Logout success');
 };
 
@@ -252,7 +297,6 @@ export const confirmReset = async (
                     token: token,
                 },
             });
-
             //Update password
             await Account.update(
                 {
@@ -264,7 +308,7 @@ export const confirmReset = async (
                     },
                 }
             );
-            res.send('Change success');
+            res.send('Change password success');
         } else {
             res.send('Token is not valid');
         }

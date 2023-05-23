@@ -224,6 +224,7 @@ export const updateBooking = async (
                 if (tableId) {
                     updateStatusTable(tableId);
                 }
+
                 await Booking.update(query, {
                     where: {
                         id: id,
@@ -358,13 +359,13 @@ export const bookingOfWeek = async (
 };
 
 //remove booking after 1 day
-const removeOldBookingRecords = () => {
-    const oneWeekAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
-    Booking.destroy({
-        where: {
-            create_at: { [Op.lte]: oneWeekAgo },
-        },
-    });
-};
+// const removeOldBookingRecords = () => {
+//     const oneWeekAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+//     Booking.destroy({
+//         where: {
+//             create_at: { [Op.lte]: oneWeekAgo },
+//         },
+//     });
+// };
 
-setInterval(removeOldBookingRecords, 10 * 24 * 60 * 60 * 1000);
+// setInterval(removeOldBookingRecords, 10 * 24 * 60 * 60 * 1000);

@@ -4,7 +4,7 @@ import { Router } from 'express';
 
 const router = Router();
 
-router.get('/get', middleware.verifyToken, tableController.getAll);
-router.get('/', middleware.verifyToken, tableController.getAll);
+router.get('/get', tableController.getAll);
+router.get('/', tableController.getAll);
 
 export default router;

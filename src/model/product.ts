@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { db } from '../config/connect';
 
-const Product = db.define('Product', {
+const Product = db.define('products', {
     id: {
         type: DataTypes.INTEGER,
         allowNull: false,

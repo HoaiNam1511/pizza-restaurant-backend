@@ -2,32 +2,28 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const connect_1 = require("../config/connect");
-const Product = connect_1.db.define('products', {
+const Table = connect_1.db.define('tables', {
     id: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
     },
-    name: {
+    table_title: {
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
-    price: {
+    table_size: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
     },
-    material: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    description: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    image: {
-        type: sequelize_1.DataTypes.STRING,
+    // table_quantity: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    // },
+    table_used: {
+        type: sequelize_1.DataTypes.BOOLEAN,
         allowNull: false,
     },
 });
-exports.default = Product;
+exports.default = Table;

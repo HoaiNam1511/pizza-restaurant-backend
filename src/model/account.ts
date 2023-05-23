@@ -24,6 +24,10 @@ export const Account = db.define('accounts', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
     },
+    refresh_token: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
 });
 
 export const Role = db.define('role', {

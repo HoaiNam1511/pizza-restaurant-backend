@@ -22,10 +22,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const tableController = __importStar(require("../controller/tableController"));
 const express_1 = require("express");
+const productController = __importStar(require("../controller/productController"));
+const multer_1 = __importDefault(require("multer"));
+const middleware = __importStar(require("../middleware"));
 const router = (0, express_1.Router)();
-router.get('/get', tableController.getAll);
-router.get('/', tableController.getAll);
+const upload = (0, multer_1.default)({ dest: 'images/' });
+router.post('/create', middleware.verifyToken, productController.create);
+router.get('/get', productController.getAll);
+router.put('/update/:id', middleware.verifyToken, productController.updateProduct);
+router.delete('/delete/:id', middleware.verifyToken, productController.deleteProduct);
+router.get('/search', productController.search);
+router.get('/filter', productController.filterProduct);
+router.get('/get/:id', productController.getOne);
+router.get('/:id', productController.getOne);
+router.get('/', productController.getAll);
 exports.default = router;
