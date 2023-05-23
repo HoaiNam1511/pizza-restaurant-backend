@@ -1,18 +1,22 @@
-import express from 'express';
 import { Router } from 'express';
 import * as productController from '../controller/productController';
-import multer from 'multer';
-import * as middleware from '../middleware';
+import * as middleware from '../middleware/auth';
+import uploadCloud from '../middleware/uploadImage';
 
 const router = Router();
-const upload = multer({ dest: 'images/' });
 
-router.post('/create', middleware.verifyToken, productController.create);
+router.post(
+    '/create',
+    middleware.verifyToken,
+    uploadCloud.single('image'),
+    productController.create
+);
 router.get('/get', productController.getAll);
 
 router.put(
     '/update/:id',
     middleware.verifyToken,
+    uploadCloud.single('image'),
     productController.updateProduct
 );
 router.delete(

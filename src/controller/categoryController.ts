@@ -1,25 +1,12 @@
-import path from 'path';
-import multer from 'multer';
 import { Request, Response } from 'express';
 
 import Category from '../model/category';
-import { Query } from './index';
+import { Query, removeImageCloud } from './index';
 export interface Category<T> {
     id?: number;
     name: string;
     image: File | null | string;
 }
-
-const storage = multer.diskStorage({
-    destination: function (req: Request, file: any, cb: any) {
-        cb(null, 'images');
-    },
-    filename: function (req: Request, file: any, cb: any) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    },
-});
-
-const upload = multer({ storage: storage }).single('image');
 
 //Get all category
 export const getAllCategory = async (
@@ -60,57 +47,55 @@ export const getAllCategory = async (
 
 //Create new category
 export const create = async (req: Request, res: Response) => {
-    upload(req, res, async function () {
-        let { name, image }: Category<File> = req.body;
+    let { name, image }: Category<File> = req.body;
 
-        try {
-            await Category.create({
-                name: name,
-                image: req.file?.filename || '',
-            });
+    try {
+        await Category.create({
+            name: name,
+            image: req.file?.path || '',
+        });
 
-            res.send({
-                message: 'Add category success',
-                action: 'add',
-            });
-        } catch (err) {
-            console.log(err);
-        }
-    });
+        res.send({
+            message: 'Add category success',
+            action: 'add',
+        });
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 //Update category
 export const updateCategory = async (req: Request, res: Response) => {
-    upload(req, res, async function () {
-        const { id } = req.params;
-        let { name, image }: Category<File | string> = req.body;
-        try {
-            await Category.update(
-                {
-                    name: name,
-                    image: req.file?.filename,
+    const { id } = req.params;
+    let { name, image }: Category<File | string> = req.body;
+    try {
+        removeImageCloud({ TableRemove: Category, id: id });
+        await Category.update(
+            {
+                name: name,
+                image: req.file?.path || '',
+            },
+            {
+                where: {
+                    id: id,
                 },
-                {
-                    where: {
-                        id: id,
-                    },
-                }
-            );
+            }
+        );
 
-            res.send({
-                message: 'Update category success',
-                action: 'update',
-            });
-        } catch (err) {
-            console.log(err);
-        }
-    });
+        res.send({
+            message: 'Update category success',
+            action: 'update',
+        });
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 //Delete category
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        removeImageCloud({ TableRemove: Category, id: id });
         await Category.destroy({
             where: {
                 id: id,

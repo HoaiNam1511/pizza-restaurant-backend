@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWeek = exports.getNewId = void 0;
+exports.removeImageCloud = exports.getWeek = exports.getNewId = void 0;
+const cloudinary_1 = __importDefault(require("cloudinary"));
 const getNewId = ({ TableName, }) => __awaiter(void 0, void 0, void 0, function* () {
     const newId = yield TableName.findOne({
         attributes: ['id'],
@@ -30,3 +34,15 @@ const getWeek = () => {
     };
 };
 exports.getWeek = getWeek;
+const removeImageCloud = ({ TableRemove, id, }) => __awaiter(void 0, void 0, void 0, function* () {
+    const pathImageProduct = yield TableRemove.findOne({
+        attributes: ['image'],
+        where: {
+            id: id,
+        },
+    });
+    const parts = pathImageProduct.image.split('/');
+    const imageName = `${parts[parts.length - 2]}/${parts[parts.length - 1].split('.')[0]}`;
+    cloudinary_1.default.v2.uploader.destroy(imageName);
+});
+exports.removeImageCloud = removeImageCloud;

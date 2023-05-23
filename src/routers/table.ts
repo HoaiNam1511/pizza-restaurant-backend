@@ -1,5 +1,4 @@
 import * as tableController from '../controller/tableController';
-import * as middleware from '../middleware';
 import { Router } from 'express';
 
 const router = Router();

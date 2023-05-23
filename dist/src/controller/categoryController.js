@@ -13,18 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteCategory = exports.updateCategory = exports.create = exports.getAllCategory = void 0;
-const path_1 = __importDefault(require("path"));
-const multer_1 = __importDefault(require("multer"));
 const category_1 = __importDefault(require("../model/category"));
-const storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'images');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path_1.default.extname(file.originalname));
-    },
-});
-const upload = (0, multer_1.default)({ storage: storage }).single('image');
+const index_1 = require("./index");
 //Get all category
 const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -55,59 +45,53 @@ const getAllCategory = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.getAllCategory = getAllCategory;
 //Create new category
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    upload(req, res, function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            let { name, image } = req.body;
-            try {
-                yield category_1.default.create({
-                    name: name,
-                    image: ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename) || '',
-                });
-                res.send({
-                    message: 'Add category success',
-                    action: 'add',
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
+    var _a;
+    let { name, image } = req.body;
+    try {
+        yield category_1.default.create({
+            name: name,
+            image: ((_a = req.file) === null || _a === void 0 ? void 0 : _a.path) || '',
         });
-    });
+        res.send({
+            message: 'Add category success',
+            action: 'add',
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
 exports.create = create;
 //Update category
 const updateCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    upload(req, res, function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            const { id } = req.params;
-            let { name, image } = req.body;
-            try {
-                yield category_1.default.update({
-                    name: name,
-                    image: (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename,
-                }, {
-                    where: {
-                        id: id,
-                    },
-                });
-                res.send({
-                    message: 'Update category success',
-                    action: 'update',
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
+    var _b;
+    const { id } = req.params;
+    let { name, image } = req.body;
+    try {
+        (0, index_1.removeImageCloud)({ TableRemove: category_1.default, id: id });
+        yield category_1.default.update({
+            name: name,
+            image: ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path) || '',
+        }, {
+            where: {
+                id: id,
+            },
         });
-    });
+        res.send({
+            message: 'Update category success',
+            action: 'update',
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
 exports.updateCategory = updateCategory;
 //Delete category
 const deleteCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        (0, index_1.removeImageCloud)({ TableRemove: category_1.default, id: id });
         yield category_1.default.destroy({
             where: {
                 id: id,

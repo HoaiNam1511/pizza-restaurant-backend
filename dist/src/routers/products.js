@@ -28,13 +28,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const productController = __importStar(require("../controller/productController"));
-const multer_1 = __importDefault(require("multer"));
-const middleware = __importStar(require("../middleware"));
+const middleware = __importStar(require("../middleware/auth"));
+const uploadImage_1 = __importDefault(require("../middleware/uploadImage"));
 const router = (0, express_1.Router)();
-const upload = (0, multer_1.default)({ dest: 'images/' });
-router.post('/create', middleware.verifyToken, productController.create);
+router.post('/create', middleware.verifyToken, uploadImage_1.default.single('image'), productController.create);
 router.get('/get', productController.getAll);
-router.put('/update/:id', middleware.verifyToken, productController.updateProduct);
+router.put('/update/:id', middleware.verifyToken, uploadImage_1.default.single('image'), productController.updateProduct);
 router.delete('/delete/:id', middleware.verifyToken, productController.deleteProduct);
 router.get('/search', productController.search);
 router.get('/filter', productController.filterProduct);

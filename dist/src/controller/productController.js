@@ -13,21 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteProduct = exports.updateProduct = exports.create = exports.getOne = exports.filterProduct = exports.search = exports.getAll = void 0;
-const path_1 = __importDefault(require("path"));
-const multer_1 = __importDefault(require("multer"));
 const sequelize_1 = require("sequelize");
 const product_1 = __importDefault(require("../model/product"));
 const category_1 = __importDefault(require("../model/category"));
 const relationModel_1 = require("../model/relationModel");
-const storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'images');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path_1.default.extname(file.originalname));
-    },
-});
-const upload = (0, multer_1.default)({ storage: storage }).single('image');
+const index_1 = require("./index");
 //Get all product
 const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -138,102 +128,98 @@ const getOne = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getOne = getOne;
 //Create product
 const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    upload(req, res, function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            let newProductId;
-            let { name, price, material, description, image, categories } = req.body;
-            const categoriesArr = JSON.parse(req.body.categories);
-            try {
-                yield product_1.default.create({
-                    name: name,
-                    price: price,
-                    material: material,
-                    description: description,
-                    image: ((_a = req.file) === null || _a === void 0 ? void 0 : _a.filename) || '',
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
-            try {
-                newProductId = yield product_1.default.findOne({
-                    attributes: ['id'],
-                    order: [['id', 'DESC']],
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
-            const categoryProductId = categoriesArr.map((value, index) => ({
-                categoryId: value,
-                productId: newProductId.id,
-            }));
-            try {
-                yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
-                res.send({
-                    message: 'Add product success',
-                    action: 'add',
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
+    var _a;
+    let newProductId;
+    let { name, price, material, description, image, categories } = req.body;
+    const categoriesArr = JSON.parse(req.body.categories);
+    try {
+        yield product_1.default.create({
+            name: name,
+            price: price,
+            material: material,
+            description: description,
+            image: ((_a = req.file) === null || _a === void 0 ? void 0 : _a.path) || '',
         });
-    });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    try {
+        newProductId = yield product_1.default.findOne({
+            attributes: ['id'],
+            order: [['id', 'DESC']],
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    const categoryProductId = categoriesArr.map((value, index) => ({
+        categoryId: value,
+        productId: newProductId.id,
+    }));
+    try {
+        yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
+        res.send({
+            message: 'Add product success',
+            action: 'add',
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
 });
 exports.create = create;
 //Update product
 const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    upload(req, res, function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function* () {
-            const { id } = req.params;
-            let { name, price, material, description, image, categories } = req.body;
-            const categoriesArr = JSON.parse(req.body.categories);
-            try {
-                yield product_1.default.update({
-                    name: name,
-                    price: price,
-                    material: material,
-                    description: description,
-                    image: (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename,
-                }, {
-                    where: {
-                        id: id,
-                    },
-                });
-                yield relationModel_1.CategoryProduct.destroy({
-                    where: {
-                        productId: id,
-                    },
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
-            const categoryProductId = categoriesArr.map((value, index) => ({
-                categoryId: value,
-                productId: id,
-            }));
-            try {
-                yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
-                res.send({
-                    message: 'Update product success',
-                    action: 'update',
-                });
-            }
-            catch (err) {
-                console.log(err);
-            }
+    var _b;
+    // upload(req, res, async function () {
+    const { id } = req.params;
+    let { name, price, material, description, image, categories } = req.body;
+    const categoriesArr = JSON.parse(req.body.categories);
+    (0, index_1.removeImageCloud)({ TableRemove: product_1.default, id: id });
+    try {
+        yield product_1.default.update({
+            name: name,
+            price: price,
+            material: material,
+            description: description,
+            image: (_b = req.file) === null || _b === void 0 ? void 0 : _b.path,
+        }, {
+            where: {
+                id: id,
+            },
         });
-    });
+        yield relationModel_1.CategoryProduct.destroy({
+            where: {
+                productId: id,
+            },
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    const categoryProductId = categoriesArr.map((value, index) => ({
+        categoryId: value,
+        productId: id,
+    }));
+    try {
+        yield relationModel_1.CategoryProduct.bulkCreate(categoryProductId);
+        res.send({
+            message: 'Update product success',
+            action: 'update',
+        });
+    }
+    catch (err) {
+        console.log(err);
+    }
+    // });
 });
 exports.updateProduct = updateProduct;
 //Delete product
 const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        (0, index_1.removeImageCloud)({ TableRemove: product_1.default, id: id });
         yield relationModel_1.CategoryProduct.destroy({
             where: {
                 productId: id,

@@ -26,7 +26,7 @@ const generateAccessToken = (account) => {
         id: account.id,
         role: account.role,
         username: account.username,
-    }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '10s' });
+    }, process.env.ACCESS_TOKEN_KEY, { expiresIn: '15m' });
 };
 const generateRefreshToken = (account) => {
     return jsonwebtoken_1.default.sign({

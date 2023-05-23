@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 import Product from '../model/product';
 import Category from '../model/category';
 import { CategoryProduct } from '../model/relationModel';
-import { Query, Params } from './index';
+import { Query, Params, removeImageCloud } from './index';
 
 interface Filter {
     category: string;
@@ -21,17 +21,6 @@ export interface Product extends Request {
     image?: File | null;
     categories: number[];
 }
-
-const storage = multer.diskStorage({
-    destination: function (req: Request, file: any, cb: any) {
-        cb(null, 'images');
-    },
-    filename: function (req: Request, file: any, cb: any) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    },
-});
-
-const upload = multer({ storage: storage }).single('image');
 
 //Get all product
 export const getAll = async (
@@ -160,109 +149,108 @@ export const getOne = async (
 
 //Create product
 export const create = async (req: Request, res: Response) => {
-    upload(req, res, async function () {
-        let newProductId: { id: number };
-        let { name, price, material, description, image, categories }: Product =
-            req.body;
-        const categoriesArr = JSON.parse(req.body.categories);
+    let newProductId: { id: number };
+    let { name, price, material, description, image, categories }: Product =
+        req.body;
+    const categoriesArr = JSON.parse(req.body.categories);
 
-        try {
-            await Product.create({
-                name: name,
-                price: price,
-                material: material,
-                description: description,
-                image: req.file?.filename || '',
-            });
-        } catch (err) {
-            console.log(err);
-        }
+    try {
+        await Product.create({
+            name: name,
+            price: price,
+            material: material,
+            description: description,
+            image: req.file?.path || '',
+        });
+    } catch (err) {
+        console.log(err);
+    }
 
-        try {
-            newProductId = await Product.findOne({
-                attributes: ['id'],
-                order: [['id', 'DESC']],
-            });
-        } catch (err) {
-            console.log(err);
-        }
+    try {
+        newProductId = await Product.findOne({
+            attributes: ['id'],
+            order: [['id', 'DESC']],
+        });
+    } catch (err) {
+        console.log(err);
+    }
 
-        const categoryProductId = categoriesArr.map(
-            (value: number, index: number) => ({
-                categoryId: value,
-                productId: newProductId.id,
-            })
-        );
+    const categoryProductId = categoriesArr.map(
+        (value: number, index: number) => ({
+            categoryId: value,
+            productId: newProductId.id,
+        })
+    );
 
-        try {
-            await CategoryProduct.bulkCreate(categoryProductId);
+    try {
+        await CategoryProduct.bulkCreate(categoryProductId);
 
-            res.send({
-                message: 'Add product success',
-                action: 'add',
-            });
-        } catch (err) {
-            console.log(err);
-        }
-    });
+        res.send({
+            message: 'Add product success',
+            action: 'add',
+        });
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 //Update product
 export const updateProduct = async (req: Request, res: Response) => {
-    upload(req, res, async function () {
-        const { id } = req.params;
-        let { name, price, material, description, image, categories }: Product =
-            req.body;
-        const categoriesArr = JSON.parse(req.body.categories);
-
-        try {
-            await Product.update(
-                {
-                    name: name,
-                    price: price,
-                    material: material,
-                    description: description,
-                    image: req.file?.filename,
-                },
-                {
-                    where: {
-                        id: id,
-                    },
-                }
-            );
-
-            await CategoryProduct.destroy({
+    // upload(req, res, async function () {
+    const { id } = req.params;
+    let { name, price, material, description, image, categories }: Product =
+        req.body;
+    const categoriesArr = JSON.parse(req.body.categories);
+    removeImageCloud({ TableRemove: Product, id: id });
+    try {
+        await Product.update(
+            {
+                name: name,
+                price: price,
+                material: material,
+                description: description,
+                image: req.file?.path,
+            },
+            {
                 where: {
-                    productId: id,
+                    id: id,
                 },
-            });
-        } catch (err) {
-            console.log(err);
-        }
-
-        const categoryProductId = categoriesArr.map(
-            (value: number, index: number) => ({
-                categoryId: value,
-                productId: id,
-            })
+            }
         );
 
-        try {
-            await CategoryProduct.bulkCreate(categoryProductId);
-            res.send({
-                message: 'Update product success',
-                action: 'update',
-            });
-        } catch (err) {
-            console.log(err);
-        }
-    });
+        await CategoryProduct.destroy({
+            where: {
+                productId: id,
+            },
+        });
+    } catch (err) {
+        console.log(err);
+    }
+
+    const categoryProductId = categoriesArr.map(
+        (value: number, index: number) => ({
+            categoryId: value,
+            productId: id,
+        })
+    );
+
+    try {
+        await CategoryProduct.bulkCreate(categoryProductId);
+        res.send({
+            message: 'Update product success',
+            action: 'update',
+        });
+    } catch (err) {
+        console.log(err);
+    }
+    // });
 };
 
 //Delete product
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        removeImageCloud({ TableRemove: Product, id: id });
         await CategoryProduct.destroy({
             where: {
                 productId: id,

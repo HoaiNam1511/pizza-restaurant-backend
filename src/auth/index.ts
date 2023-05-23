@@ -47,7 +47,7 @@ const generateAccessToken = (account: InfoAccountToken) => {
             username: account.username,
         },
         process.env.ACCESS_TOKEN_KEY as string,
-        { expiresIn: '10s' }
+        { expiresIn: '15m' }
     );
 };
 

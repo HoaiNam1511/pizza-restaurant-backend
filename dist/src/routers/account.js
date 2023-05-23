@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const accountController = __importStar(require("../controller/accountController"));
-const middleware = __importStar(require("../middleware"));
+const middleware = __importStar(require("../middleware/auth"));
 const router = (0, express_1.Router)();
 router.post('/create', middleware.verifyToken, middleware.checkAdminRole, accountController.create);
 router.put('/update/:id', middleware.verifyToken, middleware.checkAdminRole, accountController.update);

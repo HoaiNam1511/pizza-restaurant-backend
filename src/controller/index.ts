@@ -1,3 +1,4 @@
+import cloudinary from 'cloudinary';
 export interface Query {
     page: number;
     sortBy: string;
@@ -52,4 +53,25 @@ export const getWeek = (): Week => {
         startOfWeek,
         endOfWeek,
     };
+};
+
+export const removeImageCloud = async ({
+    TableRemove,
+    id,
+}: {
+    TableRemove: any;
+    id: number | string;
+}) => {
+    const pathImageProduct = await TableRemove.findOne({
+        attributes: ['image'],
+        where: {
+            id: id,
+        },
+    });
+
+    const parts = pathImageProduct.image.split('/');
+    const imageName = `${parts[parts.length - 2]}/${
+        parts[parts.length - 1].split('.')[0]
+    }`;
+    cloudinary.v2.uploader.destroy(imageName);
 };

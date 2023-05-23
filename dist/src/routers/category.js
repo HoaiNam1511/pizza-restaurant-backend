@@ -22,13 +22,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const categoryController = __importStar(require("../controller/categoryController"));
-const middleware = __importStar(require("../middleware"));
+const middleware = __importStar(require("../middleware/auth"));
+const uploadImage_1 = __importDefault(require("../middleware/uploadImage"));
 const router = (0, express_1.Router)();
-router.post('/create', middleware.verifyToken, categoryController.create);
-router.put('/update/:id', middleware.verifyToken, categoryController.updateCategory);
+router.post('/create', middleware.verifyToken, uploadImage_1.default.single('image'), categoryController.create);
+router.put('/update/:id', middleware.verifyToken, uploadImage_1.default.single('image'), categoryController.updateCategory);
 router.delete('/delete/:id', middleware.verifyToken, categoryController.deleteCategory);
 router.get('/get', categoryController.getAllCategory);
 router.get('/', categoryController.getAllCategory);

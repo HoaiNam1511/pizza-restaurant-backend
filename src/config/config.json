@@ -1,9 +1,9 @@
 {
     "development": {
-        "username": "uhtwmprqicd1l7hw",
-        "password": "oQkJuaD2Fs9FpC3tIabj",
-        "database": "bo6vjvicpubskimc89zc",
-        "host": "bo6vjvicpubskimc89zc-mysql.services.clever-cloud.com",
+        "username": "root",
+        "password": "",
+        "database": "pizza_restaurant",
+        "host": "localhost",
         "dialect": "mysql"
     },
     "test": {

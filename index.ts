@@ -37,7 +37,6 @@ app.use(
     })
 );
 
-app.use('/images', express.static('images'));
 route(app);
 
 app.listen(port, () => {

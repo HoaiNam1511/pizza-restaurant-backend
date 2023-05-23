@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as orderController from '../controller/orderController';
-import * as middleware from '../middleware';
+import * as middleware from '../middleware/auth';
 
 const router = Router();
 router.post('/create', orderController.create);

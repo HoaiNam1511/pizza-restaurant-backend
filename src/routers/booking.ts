@@ -1,6 +1,6 @@
 import * as bookingController from '../controller/bookingController';
 import { Router } from 'express';
-import * as middleware from '../middleware';
+import * as middleware from '../middleware/auth';
 const router = Router();
 
 router.post('/create', bookingController.create);

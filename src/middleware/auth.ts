@@ -1,4 +1,4 @@
-import { Account } from './../model/account';
+import { Account } from '../model/account';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 require('dotenv').config();

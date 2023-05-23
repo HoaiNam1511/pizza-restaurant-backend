@@ -1,7 +1,6 @@
-import express from 'express';
 import { Router } from 'express';
 import * as accountController from '../controller/accountController';
-import * as middleware from '../middleware';
+import * as middleware from '../middleware/auth';
 
 const router = Router();
 

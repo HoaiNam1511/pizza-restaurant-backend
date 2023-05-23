@@ -56,7 +56,6 @@ app.use(express.urlencoded());
 app.use(bodyParser.urlencoded({
     extended: true,
 }));
-app.use('/images', express.static('images'));
 route(app);
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

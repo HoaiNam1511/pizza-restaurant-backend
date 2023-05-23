@@ -1,13 +1,20 @@
 import { Router } from 'express';
 import * as categoryController from '../controller/categoryController';
-import * as middleware from '../middleware';
+import * as middleware from '../middleware/auth';
+import uploadCloud from '../middleware/uploadImage';
 
 const router = Router();
 
-router.post('/create', middleware.verifyToken, categoryController.create);
+router.post(
+    '/create',
+    middleware.verifyToken,
+    uploadCloud.single('image'),
+    categoryController.create
+);
 router.put(
     '/update/:id',
     middleware.verifyToken,
+    uploadCloud.single('image'),
     categoryController.updateCategory
 );
 router.delete(
