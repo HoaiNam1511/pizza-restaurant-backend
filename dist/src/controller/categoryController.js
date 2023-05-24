@@ -73,14 +73,16 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.create = create;
 //Update category
 const updateCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _b, _c, _d;
     const { id } = req.params;
     let { name, image } = req.body;
     try {
-        (0, index_1.removeImageCloud)({ TableRemove: category_1.default, id: id });
+        if ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path) {
+            (0, index_1.removeImageCloud)({ TableRemove: category_1.default, id: id });
+        }
         yield category_1.default.update({
             name: name,
-            image: ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path) || '',
+            image: ((_c = req.file) === null || _c === void 0 ? void 0 : _c.path) ? (_d = req.file) === null || _d === void 0 ? void 0 : _d.path : image,
         }, {
             where: {
                 id: id,

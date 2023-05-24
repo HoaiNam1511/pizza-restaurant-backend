@@ -171,19 +171,21 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.create = create;
 //Update product
 const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _b, _c, _d;
     // upload(req, res, async function () {
     const { id } = req.params;
     let { name, price, material, description, image, categories } = req.body;
     const categoriesArr = JSON.parse(req.body.categories);
-    (0, index_1.removeImageCloud)({ TableRemove: product_1.default, id: id });
+    if ((_b = req.file) === null || _b === void 0 ? void 0 : _b.path) {
+        (0, index_1.removeImageCloud)({ TableRemove: product_1.default, id: id });
+    }
     try {
         yield product_1.default.update({
             name: name,
             price: price,
             material: material,
             description: description,
-            image: (_b = req.file) === null || _b === void 0 ? void 0 : _b.path,
+            image: ((_c = req.file) === null || _c === void 0 ? void 0 : _c.path) ? (_d = req.file) === null || _d === void 0 ? void 0 : _d.path : image,
         }, {
             where: {
                 id: id,

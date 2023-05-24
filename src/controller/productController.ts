@@ -201,7 +201,9 @@ export const updateProduct = async (req: Request, res: Response) => {
     let { name, price, material, description, image, categories }: Product =
         req.body;
     const categoriesArr = JSON.parse(req.body.categories);
-    removeImageCloud({ TableRemove: Product, id: id });
+    if (req.file?.path) {
+        removeImageCloud({ TableRemove: Product, id: id });
+    }
     try {
         await Product.update(
             {
@@ -209,7 +211,7 @@ export const updateProduct = async (req: Request, res: Response) => {
                 price: price,
                 material: material,
                 description: description,
-                image: req.file?.path,
+                image: req.file?.path ? req.file?.path : image,
             },
             {
                 where: {

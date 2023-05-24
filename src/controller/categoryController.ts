@@ -78,11 +78,14 @@ export const updateCategory = async (req: Request, res: Response) => {
     const { id } = req.params;
     let { name, image }: Category<File | string> = req.body;
     try {
-        removeImageCloud({ TableRemove: Category, id: id });
+        if (req.file?.path) {
+            removeImageCloud({ TableRemove: Category, id: id });
+        }
+
         await Category.update(
             {
                 name: name,
-                image: req.file?.path || '',
+                image: req.file?.path ? req.file?.path : image,
             },
             {
                 where: {
