@@ -16,9 +16,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
     cors({
         origin: [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'https://pizza-restaurant-fe.vercel.app',
+            process.env.APP_URL_FRONTEND,
+            process.env.APP_URL_ADMIN,
+            'https://pizza-restaurant-fronend.vercel.app',
             'https://pizza-restaurant-beta.vercel.app',
         ],
         credentials: true,
