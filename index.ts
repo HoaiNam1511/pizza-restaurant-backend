@@ -17,8 +17,10 @@ app.use(
         origin: [
             'http://localhost:3000',
             'http://localhost:3001',
-            process.env.APP_URL,
             'https://pizza-restaurant-beta.vercel.app',
+            'https://pizza-restaurant-fe.vercel.app',
+            process.env.APP_URL_FRONTEND,
+            process.env.APP_URL_ADMIN,
         ],
         credentials: true,
     })
