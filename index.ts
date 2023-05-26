@@ -13,10 +13,10 @@ app.use(cookieParser());
 
 app.use(function (req: any, res: any, next: NextFunction) {
     const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
         'https://pizza-restaurant-fe.vercel.app',
         'https://pizza-restaurant-beta.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:3001',
         // Add more domains as needed
     ];
 
