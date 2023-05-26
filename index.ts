@@ -12,10 +12,7 @@ dotenv.config();
 app.use(cookieParser());
 
 app.use(function (req: Request, res: any, next: NextFunction) {
-    res.setHeader(
-        'Access-Control-Allow-Origin',
-        'https://pizza-restaurant-fe.vercel.app'
-    );
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(
         'Access-Control-Allow-Methods',
         'GET, POST, OPTIONS, PUT, PATCH, DELETE'
