@@ -12,7 +12,20 @@ dotenv.config();
 app.use(cookieParser());
 
 app.use(function (req: Request, res: any, next: NextFunction) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'https://pizza-restaurant-fe.vercel.app',
+        'https://pizza-restaurant-beta.vercel.app',
+        // Add more domains as needed
+    ];
+
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+
     res.setHeader(
         'Access-Control-Allow-Methods',
         'GET, POST, OPTIONS, PUT, PATCH, DELETE'
@@ -22,6 +35,7 @@ app.use(function (req: Request, res: any, next: NextFunction) {
         'X-Requested-With,content-type'
     );
     res.setHeader('Access-Control-Allow-Credentials', true);
+
     next();
 });
 
