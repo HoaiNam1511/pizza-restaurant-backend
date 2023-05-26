@@ -15,7 +15,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
     cors({
-        origin: ['https://pizza-restaurant-fronend.vercel.app'],
+        origin: [
+            'https://pizza-restaurant-fe.vercel.app',
+            'https://pizza-restaurant-beta.vercel.app',
+        ],
         credentials: true,
     })
 );
