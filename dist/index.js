@@ -27,7 +27,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const route = require('./src/routers/index');
-//import route from './src/routers/index'
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -37,19 +36,25 @@ const bodyParser = require('body-parser');
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 app.use((0, cookie_parser_1.default)());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        process.env.APP_URL,
-        'https://pizza-restaurant-beta.vercel.app',
-    ],
-    credentials: true,
-}));
-app.get('/', (req, res) => {
-    res.send('GET request to the homepage');
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', 'https://pizza-restaurant-fe.vercel.app');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
 });
+// app.use(
+//     cors({
+//         origin: [
+//             'https://pizza-restaurant-fe.vercel.app',
+//             'https://pizza-restaurant-beta.vercel.app',
+//             process.env.APP_URL_CORS1,
+//             process.env.APP_URL_CORS2,
+//         ],
+//         credentials: true,
+//     })
+// );
+// app.use(express.urlencoded({ extended: true }));
 // app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded());
