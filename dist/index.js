@@ -26,44 +26,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const route = require('./src/routers/index');
-const express = require('express');
-const cors = require('cors');
+const route = require("./src/routers/index");
+const express = require("express");
+const cors = require("cors");
 const app = express();
 const port = 8080;
+const bodyParser = require("body-parser");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const bodyParser = require('body-parser');
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 app.use((0, cookie_parser_1.default)());
-app.use(function (req, res, next) {
-    const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://pizza-restaurant-fe.vercel.app',
-        'https://pizza-restaurant-beta.vercel.app',
-        // Add more domains as needed
-    ];
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
-// app.use(
-//     cors({
-//         origin: [
-//             'https://pizza-restaurant-fe.vercel.app',
-//             'https://pizza-restaurant-beta.vercel.app',
-//             process.env.APP_URL_CORS1,
-//             process.env.APP_URL_CORS2,
-//         ],
-//         credentials: true,
-//     })
-// );
+// app.use(function (req: any, res: any, next: NextFunction) {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+//     res.setHeader(
+//         'Access-Control-Allow-Methods',
+//         'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+//     );
+//     res.setHeader(
+//         'Access-Control-Allow-Headers',
+//         'X-Requested-With,content-type'
+//     );
+//     res.setHeader('Access-Control-Allow-Credentials', true);
+//     next();
+// });
+app.use(cors({
+    origin: [
+        "https://pizza-restaurant-beta.vercel.app",
+        "https://pizza-restaurant-fe.vercel.app",
+        "http://localhost:3001",
+        "http://localhost:3000",
+    ],
+    credentials: true,
+}));
 // app.use(express.urlencoded({ extended: true }));
 // app.use(morgan('combined'));
 app.use(express.json());
