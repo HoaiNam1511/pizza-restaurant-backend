@@ -1,7 +1,7 @@
-import { Op } from 'sequelize';
-import { Request, Response } from 'express';
-import { Params, Query } from './index';
-import { Role, Account_role, Account } from '../model/account';
+import { Op } from "sequelize";
+import { Request, Response } from "express";
+import { Params, Query } from "./index";
+import { Role, Account_role, Account } from "../model/account";
 interface Body {
     email: string;
     username: string;
@@ -13,19 +13,19 @@ interface Body {
 export const get = async (req: Request<{}, {}, Body, Query>, res: Response) => {
     const {
         page = 0,
-        sortBy = 'id',
-        orderBy = 'DESC',
+        sortBy = "id",
+        orderBy = "DESC",
         limit = 7,
     }: Query = req.query;
     const offSet = (page - 1) * limit;
     try {
         const result = await Account.findAndCountAll({
-            attributes: ['id', 'email', 'username', 'password', 'status'],
+            attributes: ["id", "email", "username", "password", "status"],
             include: [
                 {
                     model: Role,
-                    attributes: ['id', 'name', 'description'],
-                    as: 'role',
+                    attributes: ["id", "name", "description"],
+                    as: "role",
                     through: { attributes: [] },
                 },
             ],
@@ -52,7 +52,7 @@ export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
     let newUser: any, checkAccountAlready: any;
     try {
         checkAccountAlready = await Account.findOne({
-            attributes: ['username'],
+            attributes: ["username"],
             where: {
                 [Op.and]: { username: username, email: email },
             },
@@ -61,8 +61,8 @@ export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
         //user already
         if (checkAccountAlready) {
             res.send({
-                message: 'Username had been already',
-                action: 'warning',
+                message: "Username had been already",
+                action: "warning",
             });
         } else {
             //create new user
@@ -71,12 +71,13 @@ export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
                 username: username,
                 password: password,
                 status: status,
+                refresh_token: "",
             });
 
             //get new id user recent create
             newUser = await Account.findOne({
-                attributes: ['id'],
-                order: [['id', 'DESC']],
+                attributes: ["id"],
+                order: [["id", "DESC"]],
             });
 
             //add role
@@ -86,8 +87,8 @@ export const create = async (req: Request<{}, {}, Body, {}>, res: Response) => {
             });
 
             res.send({
-                message: 'Add account success',
-                action: 'add',
+                message: "Add account success",
+                action: "add",
             });
         }
     } catch (error) {
@@ -130,8 +131,8 @@ export const update = async (req: any, res: Response) => {
             );
 
             res.send({
-                message: 'Update user success',
-                action: 'update',
+                message: "Update user success",
+                action: "update",
             });
         } else {
             if (currentUsername === process.env.ACCOUNT_AUTH) {
@@ -146,13 +147,13 @@ export const update = async (req: any, res: Response) => {
                     }
                 );
                 res.send({
-                    message: 'Update success',
-                    action: 'update',
+                    message: "Update success",
+                    action: "update",
                 });
             } else {
                 res.send({
-                    message: 'You are not auth',
-                    action: 'warning',
+                    message: "You are not auth",
+                    action: "warning",
                 });
             }
         }
@@ -169,8 +170,8 @@ export const deleteAccount = async (req: any, res: Response) => {
     try {
         if (actionaccount === process.env.ACCOUNT_AUTH) {
             res.send({
-                message: 'You cannot delete this user',
-                action: 'warning',
+                message: "You cannot delete this user",
+                action: "warning",
             });
         } else {
             await Account.destroy({
@@ -186,13 +187,13 @@ export const deleteAccount = async (req: any, res: Response) => {
             });
 
             res.send({
-                message: 'Delete user success',
-                action: 'delete',
+                message: "Delete user success",
+                action: "delete",
             });
 
             res.send({
-                message: 'Delete user success',
-                action: 'delete',
+                message: "Delete user success",
+                action: "delete",
             });
         }
     } catch (error) {
