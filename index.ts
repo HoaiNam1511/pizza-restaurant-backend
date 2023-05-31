@@ -10,22 +10,6 @@ import * as dotenv from "dotenv";
 dotenv.config();
 app.use(cookieParser());
 
-// app.use(function (req: any, res: any, next: NextFunction) {
-//     res.setHeader('Access-Control-Allow-Origin', '*');
-
-//     res.setHeader(
-//         'Access-Control-Allow-Methods',
-//         'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-//     );
-//     res.setHeader(
-//         'Access-Control-Allow-Headers',
-//         'X-Requested-With,content-type'
-//     );
-//     res.setHeader('Access-Control-Allow-Credentials', true);
-
-//     next();
-// });
-
 app.use(
     cors({
         origin: [

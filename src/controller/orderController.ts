@@ -1,11 +1,11 @@
-import moment from 'moment';
-import { Op } from 'sequelize';
-import { Request, Response } from 'express';
+import moment from "moment";
+import { Op } from "sequelize";
+import { Request, Response } from "express";
 
-import Product from '../model/product';
-import { Query } from './index';
-import { getNewId, getWeek, Week } from '../controller/';
-import { Order, Customer, OrderDetail } from '../model/order';
+import Product from "../model/product";
+import { Query } from "./index";
+import { getNewId, getWeek, Week } from "../controller/";
+import { Order, Customer, OrderDetail } from "../model/order";
 interface OrderProperty {
     name: string;
     address: string;
@@ -49,8 +49,8 @@ export const get = async (
     try {
         const {
             page = 0,
-            sortBy = 'id',
-            orderBy = 'DESC',
+            sortBy = "id",
+            orderBy = "DESC",
             limit = 7,
             orderStatus,
             paymentStatus,
@@ -74,7 +74,7 @@ export const get = async (
                 },
                 {
                     model: Product,
-                    as: 'products',
+                    as: "products",
                 },
             ],
             where: {
@@ -125,7 +125,7 @@ export const create = async (
             products,
         }: OrderProperty = req.body;
         //Create string date for code
-        let dateNow = new Date();
+        let dateNow = moment.utc();
 
         // Create new user
         await Customer.create({
@@ -143,10 +143,10 @@ export const create = async (
         await Order.create({
             order_code: code,
             customer_id: newIdCustomer,
-            order_date: moment(dateNow, 'MM-DD-YYYY'),
-            order_status: 'pending',
+            order_date: moment(dateNow, "MM-DD-YYYY"),
+            order_status: "pending",
             payment_method: paymentMethod,
-            payment_status: 'unpaid',
+            payment_status: "unpaid",
         });
 
         const newIdOrder: number = await getNewId({ TableName: Order });
@@ -161,8 +161,8 @@ export const create = async (
         await OrderDetail.bulkCreate(orderDetails);
 
         res.send({
-            message: 'Create order success',
-            action: 'add',
+            message: "Create order success",
+            action: "add",
         });
     } catch (err) {
         console.log(err);
@@ -179,11 +179,11 @@ export const update = async (
         const { orderStatus, paymentStatus, paymentMethod }: OrderUpdate =
             req.body;
 
-        if (orderStatus === 'shipped' && paymentMethod === 'crash') {
+        if (orderStatus === "shipped" && paymentMethod === "crash") {
             await Order.update(
                 {
                     order_status: orderStatus,
-                    payment_status: 'paid',
+                    payment_status: "paid",
                 },
                 {
                     where: {
@@ -191,7 +191,7 @@ export const update = async (
                     },
                 }
             );
-        } else if (orderStatus !== 'shipped' && paymentMethod === 'crash') {
+        } else if (orderStatus !== "shipped" && paymentMethod === "crash") {
             await Order.update(
                 {
                     order_status: orderStatus,
@@ -217,8 +217,8 @@ export const update = async (
         }
 
         res.send({
-            message: 'Update order success',
-            action: 'update',
+            message: "Update order success",
+            action: "update",
         });
     } catch (err) {
         console.log(err);
@@ -247,13 +247,13 @@ export const totalOrder = async ({
     endPoint: string;
 }): Promise<TotalOrder> => {
     const result = await Order.findAll({
-        attributes: ['id', 'order_date'],
+        attributes: ["id", "order_date"],
         include: [
             {
                 model: Product,
-                as: 'products',
-                attributes: ['price'],
-                through: { attributes: ['quantity'] },
+                as: "products",
+                attributes: ["price"],
+                through: { attributes: ["quantity"] },
             },
         ],
         where: {
@@ -261,7 +261,7 @@ export const totalOrder = async ({
                 [Op.gt]: startPoint,
             },
         },
-        order: [['order_date', 'DESC']],
+        order: [["order_date", "DESC"]],
     });
 
     const modifiedData = result.map((item: any) => {
@@ -274,7 +274,7 @@ export const totalOrder = async ({
 
         return {
             id,
-            date: moment(order_date, 'YYYY.MM.DD').format('DD-MM-YYYY'),
+            date: moment(order_date, "YYYY.MM.DD").format("DD-MM-YYYY"),
             products: modifiedProducts,
         };
     });

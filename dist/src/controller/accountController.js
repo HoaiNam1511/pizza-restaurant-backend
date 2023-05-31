@@ -14,16 +14,16 @@ const sequelize_1 = require("sequelize");
 const account_1 = require("../model/account");
 //Get account
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, } = req.query;
+    const { page = 0, sortBy = "id", orderBy = "DESC", limit = 7, } = req.query;
     const offSet = (page - 1) * limit;
     try {
         const result = yield account_1.Account.findAndCountAll({
-            attributes: ['id', 'email', 'username', 'password', 'status'],
+            attributes: ["id", "email", "username", "password", "status"],
             include: [
                 {
                     model: account_1.Role,
-                    attributes: ['id', 'name', 'description'],
-                    as: 'role',
+                    attributes: ["id", "name", "description"],
+                    as: "role",
                     through: { attributes: [] },
                 },
             ],
@@ -49,7 +49,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let newUser, checkAccountAlready;
     try {
         checkAccountAlready = yield account_1.Account.findOne({
-            attributes: ['username'],
+            attributes: ["username"],
             where: {
                 [sequelize_1.Op.and]: { username: username, email: email },
             },
@@ -57,8 +57,8 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //user already
         if (checkAccountAlready) {
             res.send({
-                message: 'Username had been already',
-                action: 'warning',
+                message: "Username had been already",
+                action: "warning",
             });
         }
         else {
@@ -68,11 +68,12 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 username: username,
                 password: password,
                 status: status,
+                refresh_token: "",
             });
             //get new id user recent create
             newUser = yield account_1.Account.findOne({
-                attributes: ['id'],
-                order: [['id', 'DESC']],
+                attributes: ["id"],
+                order: [["id", "DESC"]],
             });
             //add role
             yield account_1.Account_role.create({
@@ -80,8 +81,8 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 roleId: role,
             });
             res.send({
-                message: 'Add account success',
-                action: 'add',
+                message: "Add account success",
+                action: "add",
             });
         }
     }
@@ -116,8 +117,8 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             });
             res.send({
-                message: 'Update user success',
-                action: 'update',
+                message: "Update user success",
+                action: "update",
             });
         }
         else {
@@ -130,14 +131,14 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     },
                 });
                 res.send({
-                    message: 'Update success',
-                    action: 'update',
+                    message: "Update success",
+                    action: "update",
                 });
             }
             else {
                 res.send({
-                    message: 'You are not auth',
-                    action: 'warning',
+                    message: "You are not auth",
+                    action: "warning",
                 });
             }
         }
@@ -154,8 +155,8 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         if (actionaccount === process.env.ACCOUNT_AUTH) {
             res.send({
-                message: 'You cannot delete this user',
-                action: 'warning',
+                message: "You cannot delete this user",
+                action: "warning",
             });
         }
         else {
@@ -170,12 +171,12 @@ const deleteAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 },
             });
             res.send({
-                message: 'Delete user success',
-                action: 'delete',
+                message: "Delete user success",
+                action: "delete",
             });
             res.send({
-                message: 'Delete user success',
-                action: 'delete',
+                message: "Delete user success",
+                action: "delete",
             });
         }
     }

@@ -36,19 +36,6 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 app.use((0, cookie_parser_1.default)());
-// app.use(function (req: any, res: any, next: NextFunction) {
-//     res.setHeader('Access-Control-Allow-Origin', '*');
-//     res.setHeader(
-//         'Access-Control-Allow-Methods',
-//         'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-//     );
-//     res.setHeader(
-//         'Access-Control-Allow-Headers',
-//         'X-Requested-With,content-type'
-//     );
-//     res.setHeader('Access-Control-Allow-Credentials', true);
-//     next();
-// });
 app.use(cors({
     origin: [
         "https://pizza-restaurant-beta.vercel.app",

@@ -21,7 +21,7 @@ const order_1 = require("../model/order");
 //Get order
 const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { page = 0, sortBy = 'id', orderBy = 'DESC', limit = 7, orderStatus, paymentStatus, } = req.query;
+        const { page = 0, sortBy = "id", orderBy = "DESC", limit = 7, orderStatus, paymentStatus, } = req.query;
         const offSet = (page - 1) * limit;
         const whereClause = {};
         if (paymentStatus) {
@@ -37,7 +37,7 @@ const get = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
                 {
                     model: product_1.default,
-                    as: 'products',
+                    as: "products",
                 },
             ],
             where: {
@@ -70,7 +70,7 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name, address, email, phone, paymentMethod, products, } = req.body;
         //Create string date for code
-        let dateNow = new Date();
+        let dateNow = moment_1.default.utc();
         // Create new user
         yield order_1.Customer.create({
             name: name,
@@ -85,10 +85,10 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield order_1.Order.create({
             order_code: code,
             customer_id: newIdCustomer,
-            order_date: (0, moment_1.default)(dateNow, 'MM-DD-YYYY'),
-            order_status: 'pending',
+            order_date: (0, moment_1.default)(dateNow, "MM-DD-YYYY"),
+            order_status: "pending",
             payment_method: paymentMethod,
-            payment_status: 'unpaid',
+            payment_status: "unpaid",
         });
         const newIdOrder = yield (0, controller_1.getNewId)({ TableName: order_1.Order });
         const orderDetails = products.map((product) => ({
@@ -99,8 +99,8 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }));
         yield order_1.OrderDetail.bulkCreate(orderDetails);
         res.send({
-            message: 'Create order success',
-            action: 'add',
+            message: "Create order success",
+            action: "add",
         });
     }
     catch (err) {
@@ -113,17 +113,17 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { orderStatus, paymentStatus, paymentMethod } = req.body;
-        if (orderStatus === 'shipped' && paymentMethod === 'crash') {
+        if (orderStatus === "shipped" && paymentMethod === "crash") {
             yield order_1.Order.update({
                 order_status: orderStatus,
-                payment_status: 'paid',
+                payment_status: "paid",
             }, {
                 where: {
                     id: id,
                 },
             });
         }
-        else if (orderStatus !== 'shipped' && paymentMethod === 'crash') {
+        else if (orderStatus !== "shipped" && paymentMethod === "crash") {
             yield order_1.Order.update({
                 order_status: orderStatus,
             }, {
@@ -143,8 +143,8 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
         }
         res.send({
-            message: 'Update order success',
-            action: 'update',
+            message: "Update order success",
+            action: "update",
         });
     }
     catch (err) {
@@ -164,13 +164,13 @@ const orderOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.orderOfWeek = orderOfWeek;
 const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield order_1.Order.findAll({
-        attributes: ['id', 'order_date'],
+        attributes: ["id", "order_date"],
         include: [
             {
                 model: product_1.default,
-                as: 'products',
-                attributes: ['price'],
-                through: { attributes: ['quantity'] },
+                as: "products",
+                attributes: ["price"],
+                through: { attributes: ["quantity"] },
             },
         ],
         where: {
@@ -178,7 +178,7 @@ const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void
                 [sequelize_1.Op.gt]: startPoint,
             },
         },
-        order: [['order_date', 'DESC']],
+        order: [["order_date", "DESC"]],
     });
     const modifiedData = result.map((item) => {
         const { id, order_date, products } = item;
@@ -188,7 +188,7 @@ const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void
         });
         return {
             id,
-            date: (0, moment_1.default)(order_date, 'YYYY.MM.DD').format('DD-MM-YYYY'),
+            date: (0, moment_1.default)(order_date, "YYYY.MM.DD").format("DD-MM-YYYY"),
             products: modifiedProducts,
         };
     });
