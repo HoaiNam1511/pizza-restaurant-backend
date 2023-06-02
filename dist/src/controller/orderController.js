@@ -180,17 +180,17 @@ const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void
                 [sequelize_1.Op.gt]: startPoint,
             },
         },
-        order: [["order_date", "DESC"]],
+        order: [["created_at", "DESC"]],
     });
     const modifiedData = result.map((item) => {
-        const { id, order_date, products } = item;
+        const { id, created_at, products } = item;
         const modifiedProducts = products.map((product) => {
             const { price, order_details } = product;
             return { price, quantity: order_details.quantity };
         });
         return {
             id,
-            date: (0, moment_1.default)(order_date, "YYYY.MM.DD").format("DD-MM-YYYY"),
+            date: (0, moment_1.default)(item.dataValues.created_at, "YYYY.MM.DD").format("DD-MM-YYYY"),
             products: modifiedProducts,
         };
     });

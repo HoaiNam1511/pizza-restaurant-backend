@@ -263,11 +263,11 @@ export const totalOrder = async ({
                 [Op.gt]: startPoint,
             },
         },
-        order: [["order_date", "DESC"]],
+        order: [["created_at", "DESC"]],
     });
 
     const modifiedData = result.map((item: any) => {
-        const { id, order_date, products } = item;
+        const { id, created_at, products } = item;
 
         const modifiedProducts = products.map((product: any) => {
             const { price, order_details } = product;
@@ -276,7 +276,9 @@ export const totalOrder = async ({
 
         return {
             id,
-            date: moment(order_date, "YYYY.MM.DD").format("DD-MM-YYYY"),
+            date: moment(item.dataValues.created_at, "YYYY.MM.DD").format(
+                "DD-MM-YYYY"
+            ),
             products: modifiedProducts,
         };
     });
