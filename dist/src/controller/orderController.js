@@ -71,6 +71,8 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { name, address, email, phone, paymentMethod, products, } = req.body;
         //Create string date for code
         let dateNow = moment_1.default.utc();
+        console.log("come");
+        console.log(dateNow);
         // Create new user
         yield order_1.Customer.create({
             name: name,
@@ -164,7 +166,7 @@ const orderOfWeek = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.orderOfWeek = orderOfWeek;
 const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield order_1.Order.findAll({
-        attributes: ["id", "order_date"],
+        attributes: ["id", "created_at"],
         include: [
             {
                 model: product_1.default,
@@ -174,7 +176,7 @@ const totalOrder = ({ startPoint, endPoint, }) => __awaiter(void 0, void 0, void
             },
         ],
         where: {
-            order_date: {
+            created_at: {
                 [sequelize_1.Op.gt]: startPoint,
             },
         },

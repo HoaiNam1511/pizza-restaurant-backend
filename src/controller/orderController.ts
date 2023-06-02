@@ -1,3 +1,4 @@
+import { login } from "./../auth/index";
 import moment from "moment";
 import { Op } from "sequelize";
 import { Request, Response } from "express";
@@ -126,7 +127,8 @@ export const create = async (
         }: OrderProperty = req.body;
         //Create string date for code
         let dateNow = moment.utc();
-
+        console.log("come");
+        console.log(dateNow);
         // Create new user
         await Customer.create({
             name: name,
@@ -247,7 +249,7 @@ export const totalOrder = async ({
     endPoint: string;
 }): Promise<TotalOrder> => {
     const result = await Order.findAll({
-        attributes: ["id", "order_date"],
+        attributes: ["id", "created_at"],
         include: [
             {
                 model: Product,
@@ -257,7 +259,7 @@ export const totalOrder = async ({
             },
         ],
         where: {
-            order_date: {
+            created_at: {
                 [Op.gt]: startPoint,
             },
         },
